@@ -1,0 +1,325 @@
+1. Pod
+apiVersion: v1  # Указывает на версию API Kubernetes, используемую для создания этого объекта. Для подов используется "v1".
+kind: Pod  # Определяет тип объекта, который вы создаете. В данном случае это Pod.
+metadata:
+  name: my-pod  # Уникальное имя для этого пода в рамках текущего namespace. Имя должно быть DNS-совместимым.
+  labels:  # Набор меток для организации и поиска объектов. Метки состоят из пар ключ-значение.
+    app: my-app  # Произвольная метка с ключом "app" и значением "my-app". Используется для идентификации и группировки объектов.
+spec:
+  containers:  # Список контейнеров, которые будут запущены в этом поде. Каждый под может содержать один или несколько контейнеров.
+  - name: my-container  # Уникальное имя для этого контейнера в рамках пода. 
+    image: nginx:latest  # Docker-образ, используемый для создания контейнера. "nginx:latest" указывает на образ Nginx последней версии.
+    ports:
+    - containerPort: 80  # Порт внутри контейнера, который будет открыт и прослушиваться. В данном случае, это порт 80.
+    env:  # Список переменных окружения, которые будут переданы контейнеру.
+    - name: ENV_VAR  # Имя переменной окружения.
+      value: value  # Значение переменной окружения.
+
+2. Deployment
+apiVersion: apps/v1  # Указывает на версию API Kubernetes, используемую для создания объекта Deployment. Для деплоев используется "apps/v1".
+kind: Deployment  # Определяет тип объекта, который вы создаете. В данном случае это Deployment.
+metadata:
+  name: my-deployment  # Уникальное имя для этого деплоя в рамках текущего namespace. Имя должно быть DNS-совместимым.
+  labels:  # Набор меток для организации и поиска объектов. Метки состоят из пар ключ-значение.
+    app: my-app  # Произвольная метка с ключом "app" и значением "my-app". Используется для идентификации и группировки объектов.
+spec:
+  replicas: 3  # Количество реплик (подов), которые будут запущены. В данном случае создаются 3 реплики.
+  selector:
+    matchLabels:
+      app: my-app  # Метки, по которым будут выбраны поды для этого деплоя. Эти метки должны совпадать с метками подов.
+  template:
+    metadata:
+      labels:
+        app: my-app  # Метки, применяемые к подам, созданным этим деплоем. Эти метки должны совпадать с метками в селекторе.
+    spec:
+      containers:
+      - name: my-container  # Уникальное имя для этого контейнера в рамках пода.
+        image: nginx:latest  # Docker-образ, используемый для создания контейнера. "nginx:latest" указывает на образ Nginx последней версии.
+        ports:
+        - containerPort: 80  # Порт внутри контейнера, который будет открыт и прослушиваться. В данном случае, это порт 80.
+        resources:  # Указывает на ресурсы, запрашиваемые и лимитируемые для контейнера.
+          requests:
+            memory: "64Mi"  # Минимальное количество памяти, которое требуется контейнеру.
+            cpu: "250m"  # Минимальное количество CPU, которое требуется контейнеру. 250m означает 0.25 CPU.
+          limits:
+            memory: "128Mi"  # Максимальное количество памяти, которое может использовать контейнер.
+            cpu: "500m"  # Максимальное количество CPU, которое может использовать контейнер. 500m означает 0.5 CPU.
+
+3. Service
+apiVersion: v1  # Указывает на версию API Kubernetes, используемую для создания объекта Service. Для сервисов используется "v1".
+kind: Service  # Определяет тип объекта, который вы создаете. В данном случае это Service.
+metadata:
+  name: my-service  # Уникальное имя для этого сервиса в рамках текущего namespace. Имя должно быть DNS-совместимым.
+  labels:  # Набор меток для организации и поиска объектов. Метки состоят из пар ключ-значение.
+    app: my-app  # Произвольная метка с ключом "app" и значением "my-app". Используется для идентификации и группировки объектов.
+spec:
+  selector:
+    app: my-app  # Метки, по которым сервис будет находить поды, которые он обслуживает. Эти метки должны совпадать с метками подов.
+  ports:
+  - protocol: TCP  # Протокол, используемый сервисом. В данном случае это TCP.
+    port: 80  # Порт, на который сервис будет принимать запросы от клиентов.
+    targetPort: 80  # Порт внутри пода, на который сервис будет перенаправлять запросы. Этот порт должен совпадать с портом контейнера.
+  type: ClusterIP  # Тип сервиса. ClusterIP создает внутренний IP-адрес для использования внутри кластера. Другие типы включают NodePort, LoadBalancer и ExternalName.
+
+4. ConfigMap
+apiVersion: v1  # Указывает на версию API Kubernetes, используемую для создания объекта ConfigMap. Для конфигурационных карт используется "v1".
+kind: ConfigMap  # Определяет тип объекта, который вы создаете. В данном случае это ConfigMap.
+metadata:
+  name: my-config  # Уникальное имя для этой конфигурационной карты в рамках текущего namespace. Имя должно быть DNS-совместимым.
+data:  # Данные, хранящиеся в ConfigMap, представлены в виде пар ключ-значение. Значения хранятся в виде обычного текста.
+  config-key: config-value  # Произвольная пара ключ-значение. "config-key" это ключ, а "config-value" это значение.
+  another-config-key: another-config-value  # Еще одна произвольная пара ключ-значение. "another-config-key" это ключ, а "another-config-value" это значение.
+
+5. Secret
+apiVersion: v1  # Указывает на версию API Kubernetes, используемую для создания объекта Secret. Для секретов используется "v1".
+kind: Secret  # Определяет тип объекта, который вы создаете. В данном случае это Secret.
+metadata:
+  name: my-secret  # Уникальное имя для этого секрета в рамках текущего namespace. Имя должно быть DNS-совместимым.
+type: Opaque  # Тип секрета. Opaque указывает на произвольные данные, закодированные в base64. Другие типы включают kubernetes.io/tls и kubernetes.io/dockerconfigjson.
+data:  # Данные, хранящиеся в секрете, представлены в виде пар ключ-значение. Значения должны быть закодированы в base64.
+  username: YWRtaW4=  # Закодированное в base64 значение "admin". "username" это ключ.
+  password: MWYyZDFlMmU2N2Rm  # Закодированное в base64 значение "1f2d1e2e67df". "password" это ключ.
+
+6. PersistentVolume (PV)
+apiVersion: v1  # Указывает на версию API Kubernetes, используемую для создания объекта PersistentVolume. Для персистентных томов используется "v1".
+kind: PersistentVolume  # Определяет тип объекта, который вы создаете. В данном случае это PersistentVolume.
+metadata:
+  name: my-pv  # Уникальное имя для этого персистентного тома в рамках текущего namespace. Имя должно быть DNS-совместимым.
+spec:
+  capacity:
+    storage: 1Gi  # Объем хранилища, выделенного для этого PV. Указывается в единицах измерения, таких как Gi (гигабайты).
+  accessModes:
+    - ReadWriteOnce  # Режим доступа к тому. ReadWriteOnce позволяет одному узлу читать и записывать данные. Другие режимы включают ReadOnlyMany и ReadWriteMany.
+  persistentVolumeReclaimPolicy: Retain  # Политика рекламации для тома. Retain сохраняет данные после удаления PVC. Другие опции включают Recycle и Delete.
+  hostPath:
+    path: /mnt/data  # Путь на хосте, который будет смонтирован в PV. Используется для тестирования и разработки.
+
+7. PersistentVolumeClaim (PVC)
+apiVersion: v1  # Указывает на версию API Kubernetes, используемую для создания объекта PersistentVolumeClaim. Для запросов персистентных томов используется "v1".
+kind: PersistentVolumeClaim  # Определяет тип объекта, который вы создаете. В данном случае это PersistentVolumeClaim.
+metadata:
+  name: my-pvc  # Уникальное имя для этого запроса персистентного тома в рамках текущего namespace. Имя должно быть DNS-совместимым.
+spec:
+  accessModes:
+    - ReadWriteOnce  # Режим доступа, запрашиваемый для тома. Должен совпадать с режимом доступа PV. ReadWriteOnce позволяет одному узлу читать и записывать данные.
+  resources:
+    requests:
+      storage: 1Gi  # Объем хранилища, запрашиваемый для этого PVC. Указывается в единицах измерения, таких как Gi (гигабайты).
+
+8.Ingress
+apiVersion: networking.k8s.io/v1  # Указывает на версию API Kubernetes, используемую для создания объекта Ingress. Для Ingress используется "networking.k8s.io/v1".
+kind: Ingress  # Определяет тип объекта, который вы создаете. В данном случае это Ingress.
+metadata:
+  name: my-ingress  # Уникальное имя для этого Ingress в рамках текущего namespace. Имя должно быть DNS-совместимым.
+  annotations:  # Аннотации для дополнительной информации и конфигурации Ingress. Аннотации состоят из пар ключ-значение.
+    nginx.ingress.kubernetes.io/rewrite-target: /  # Пример аннотации для переписывания пути. В данном случае все пути будут переписаны на корень.
+spec:
+  rules:  # Правила, определяющие как запросы будут обрабатываться Ingress.
+  - host: my-app.example.com  # Хост, который будет обслуживаться этим Ingress. В запросах к этому хосту будут применяться следующие правила.
+    http:
+      paths:  # Список путей и связанных с ними сервисов.
+      - path: /  # Путь, который будет обрабатываться (например, /api). В данном случае корневой путь "/".
+        pathType: Prefix  # Тип пути (Exact или Prefix). Prefix означает, что все запросы, начинающиеся с указанного пути, будут обрабатываться.
+        backend:
+          service:
+            name: my-service  # Имя сервиса, к которому будут направляться запросы. Сервис должен существовать в том же namespace.
+            port:
+              number: 80  # Порт сервиса, на который будут направляться запросы. Этот порт должен быть определен в сервисе.
+
+9. Конфиг кластера для миникуба
+apiVersion: v1  # Версия API, используемая для конфигурации Minikube.
+kind: Config  # Определяет тип объекта, в данном случае это конфигурация Minikube.
+metadata:
+  name: minikube-config  # Уникальное имя для этой конфигурации Minikube.
+
+# Настройки для Minikube
+minikube:
+  driver: virtualbox  # Драйвер для запуска Minikube. В данном случае используется VirtualBox. Другие возможные значения: docker, vmwarefusion, hyperv, kvm2 и т.д.
+  cpus: 4  # Количество CPU, выделяемое для Minikube.
+  memory: 8192  # Количество памяти (в МБ), выделяемое для Minikube.
+  diskSize: "20g"  # Размер диска, выделяемого для Minikube. Указывается в гигабайтах.
+  kubernetesVersion: "v1.20.0"  # Версия Kubernetes для Minikube.
+  extraConfig:  # Дополнительные конфигурации для различных компонентов Kubernetes.
+    kubelet:  # Настройки для kubelet.
+      node-labels: "env=dev,role=minikube"  # Метки для узла Minikube.
+    apiserver:  # Настройки для API-сервера.
+      authorization-mode: "RBAC,Node"  # Режим авторизации для API-сервера.
+
+# Настройки для сетевых плагинов
+networking:
+  cni: flannel  # Сетевой плагин (CNI) для Minikube. В данном случае используется Flannel. Другие возможные значения: calico, cilium, weave и т.д.
+  podSubnet: "10.244.0.0/16"  # Подсеть для подов (Pod).
+
+# Настройки для хранилища
+storage:
+  provisioner: standard  # Настройки для провайдера хранилища. В данном случае используется стандартный провайдер.
+
+# Настройки для дополнений (addons)
+addons:
+  enable:  # Список дополнений, которые необходимо включить.
+    - metrics-server  # Включение Metrics Server для сбора метрик узлов и подов.
+    - dashboard  # Включение Kubernetes Dashboard для визуального управления кластером.
+    - ingress  # Включение Ingress Controller для маршрутизации трафика.
+  disable:  # Список дополнений, которые необходимо отключить.
+    - default-storageclass  # Отключение стандартного класса хранилища.
+
+# Настройки для прокси
+proxy:
+  httpProxy: "http://proxy.example.com:8080"  # Адрес HTTP-прокси.
+  httpsProxy: "https://proxy.example.com:8080"  # Адрес HTTPS-прокси.
+  noProxy: ".example.com,localhost"  # Список доменов, которые не используют прокси.
+
+# Настройки для Docker
+docker:
+  registryMirrors:  # Список зеркал для Docker Registry.
+    - "https://registry.example.com"
+
+# Настройки для DNS
+dns:
+  domain: "cluster.local"  # DNS-домен для кластера Minikube.
+
+# Настройки для сертификатов
+certificates:
+  renewal: 8760h0m0s  # Срок действия сертификатов (1 год).
+
+# Настройки для логирования и мониторинга
+logging:
+  level: "info"  # Уровень логирования (info, debug, warn, error).
+
+monitoring:
+  enabled: true  # Включение мониторинга.
+
+# Настройки для профилей Minikube
+profiles:
+  - name: dev  # Имя профиля.
+    cpus: 2  # Количество CPU для этого профиля.
+    memory: 4096  # Количество памяти (в МБ) для этого профиля.
+  - name: test  # Имя второго профиля.
+    cpus: 4  # Количество CPU для этого профиля.
+    memory: 8192  # Количество памяти (в МБ) для этого профиля.
+
+10. Kubernetes Cluster Configuration (kubeadm)
+apiVersion: kubeadm.k8s.io/v1beta3  # Указывает на версию API, используемую kubeadm для настройки кластера. В данном случае это "v1beta3".
+kind: ClusterConfiguration  # Определяет тип объекта, который описывает конфигурацию всего кластера.
+metadata:
+  name: my-cluster  # Уникальное имя для этой конфигурации кластера.
+
+# Основная конфигурация контроллера (Control Plane)
+controlPlaneEndpoint: "LOAD_BALANCER_DNS:LOAD_BALANCER_PORT"  # Указывает на конечную точку доступа контроллера, может быть IP-адресом или DNS-именем балансировщика нагрузки.
+apiServer:
+  extraArgs:  # Дополнительные аргументы для API-сервера.
+    authorization-mode: Node,RBAC  # Режим авторизации, включающий Node и RBAC.
+  timeoutForControlPlane: 4m0s  # Таймаут для операций управления контроллером.
+controllerManager:
+  extraArgs:  # Дополнительные аргументы для менеджера контроллеров.
+    bind-address: "0.0.0.0"  # Адрес, на который будет привязан менеджер контроллеров.
+scheduler:
+  extraArgs:  # Дополнительные аргументы для планировщика.
+    bind-address: "0.0.0.0"  # Адрес, на который будет привязан планировщик.
+
+# Настройки сети
+networking:
+  dnsDomain: "cluster.local"  # DNS-домен для кластера.
+  serviceSubnet: "10.96.0.0/12"  # Подсеть для служб (Service).
+  podSubnet: "192.168.0.0/16"  # Подсеть для подов (Pod).
+
+# Настройки для различных компонентов кластера
+etcd:
+  local:
+    dataDir: /var/lib/etcd  # Каталог для хранения данных etcd.
+
+# Настройки контейнерного рантайма
+containerRuntime:
+  name: containerd  # Имя контейнерного рантайма, в данном случае используется containerd.
+
+# Настройки для kube-proxy
+kubeProxy:
+  config:
+    mode: ipvs  # Режим работы kube-proxy, в данном случае используется IPVS.
+
+# Настройки для kubelet
+kubeletConfiguration:
+  baseConfig:
+    cgroupDriver: systemd  # Драйвер cgroup для kubelet.
+    clusterDNS:
+      - "10.96.0.10"  # IP-адрес службы DNS.
+
+# Настройки для использования внешнего хранилища (например, AWS EBS, GCE PD и т.д.)
+storage:
+  useCloud: false  # Указывает, использовать ли облачные хранилища.
+
+# Настройки для сетевого плагина (например, Calico, Flannel и т.д.)
+networkingPlugin:
+  name: calico  # Имя сетевого плагина, в данном случае используется Calico.
+  calico:
+    ipPools:
+      - cidr: "192.168.0.0/16"  # Подсеть, используемая Calico для IP-адресов подов.
+    nodeAddressAutodetection: canReach=8.8.8.8  # Автоматическое обнаружение IP-адресов узлов, проверка доступности до 8.8.8.8.
+
+# Настройки для управления версиями Kubernetes (апгрейд, даунгрейд)
+kubernetesVersion: "1.20.0"  # Версия Kubernetes для кластера.
+imageRepository: "k8s.gcr.io"  # Репозиторий образов для компонентов Kubernetes.
+certificatesDir: "/etc/kubernetes/pki"  # Каталог для хранения сертификатов.
+clusterName: "my-cluster"  # Имя кластера.
+
+# Настройки для DNS (например, CoreDNS)
+dns:
+  type: CoreDNS  # Тип DNS-сервиса, в данном случае используется CoreDNS.
+  imageRepository: "k8s.gcr.io/coredns"  # Репозиторий образов для DNS-сервиса.
+  imageTag: "v1.7.0"  # Тег образа для DNS-сервиса.
+
+# Настройки для аудита и логирования
+auditPolicy:
+  logPath: "/var/log/kubernetes/audit.log"  # Путь к файлу журналов аудита.
+  logMaxAge: 30  # Максимальное количество дней для хранения журналов аудита.
+  logMaxBackup: 10  # Максимальное количество резервных копий журналов аудита.
+  logMaxSize: 100  # Максимальный размер журнала аудита в мегабайтах.
+
+# Настройки для управления сертификатами
+certificates:
+  duration: 8760h0m0s  # Срок действия сертификатов (1 год).
+  renewBefore: 240h0m0s  # Время до истечения срока действия сертификатов для их обновления (10 дней).
+
+# Настройки для контроля RBAC (Role-Based Access Control)
+rbac:
+  enabled: true  # Включение RBAC для управления доступом.
+
+# Настройки для Node (например, taints, labels)
+nodeRegistration:
+  name: "my-node"  # Имя узла.
+  taints:  # Настройки taints для узла.
+    - key: "key"
+      value: "value"
+      effect: "NoSchedule"  # Эффект taints (NoSchedule, PreferNoSchedule, NoExecute).
+  kubeletExtraArgs:  # Дополнительные аргументы для kubelet.
+    node-labels: "role=worker"  # Метки для узла.
+
+# Настройки для API-сервера
+apiServerExtraVolumes:
+  - name: "audit-log"
+    hostPath: "/var/log/kubernetes/audit.log"
+    mountPath: "/var/log/kubernetes/audit.log"
+    readOnly: false  # Указывает, что путь не является только для чтения.
+
+# Настройки для авторизации и аутентификации
+authentication:
+  webHook: null  # Настройки веб-хуков для аутентификации.
+  tokenWebhookConfigFile: null  # Файл конфигурации веб-хуков для токенов.
+
+# Настройки для облачной интеграции
+cloudProvider:
+  name: "aws"  # Имя облачного провайдера, в данном случае AWS.
+  config:
+    global:
+      disable-security-group-ingress: false  # Отключение автоматического управления группами безопасности.
+
+# Настройки для мониторинга и логирования
+monitoring:
+  enabled: true  # Включение мониторинга.
+  prometheus:
+    enabled: true  # Включение Prometheus для сбора метрик.
+
+# Настройки для других компонентов и плагинов
+addons:
+  - name: "metrics-server"
+    enabled: true  # Включение Metrics Server для сбора метрик узлов и подов.
