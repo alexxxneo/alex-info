@@ -1,4 +1,4 @@
-# ПУТИ
+# Пути, логи, конфигурации
 
 Добавление репозитория вручную. Например, когда не получается добавить gpg ключ
 sudo nano /etc/apt/sources.list
@@ -10,30 +10,32 @@ sudo nano /etc/apt/sources.list
 
 Устанавливаем ключ и удаляем старые записи от hashicorp в /etc/apt/sources.list.d
 
+``` bash 
 sudo -s
 wget -O- https://apt.releases.hashicorp.com/gpg |
-    gpg --dearmor > /usr/share/keyrings/hashicorp-archive-keyring.gpg
+    gpg --dearmor > /usr/share/keyrings/hashicorp-archive-keyring.gpg  
 
 echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" > /etc/apt/sources.list.d/hashicorp.list
-apt update
+apt update  
 
-Устанавливаем Packer
+#Устанавливаем Packer  
 sudo apt-get update && sudo apt-get install packer
+```
 
 
 
 ## Установка бинарных приложений на примере Minikube и Terraform
 
-Minikube
+Minikube  
 curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 \
-  && chmod +x minikube
-sudo mkdir -p /usr/local/bin/
-sudo install minikube /usr/local/bin/
+  && chmod +x minikube  
+sudo mkdir -p /usr/local/bin/  
+sudo install minikube /usr/local/bin/  
 
-Terraform
-Копируем бинарник домашнюю директорию /home/alex
-Даем права на выполнение chmod +x terraform
-Устанавливаем sudo install terraform /usr/local/bin/
+Terraform  
+Копируем бинарник домашнюю директорию /home/alex  
+Даем права на выполнение chmod +x terraform  
+Устанавливаем sudo install terraform /usr/local/bin/  
 
 # Разное
 
