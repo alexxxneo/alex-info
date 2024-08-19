@@ -1,4 +1,4 @@
-1. Pod
+#1. Pod
 apiVersion: v1  # Указывает на версию API Kubernetes, используемую для создания этого объекта. Для подов используется "v1".
 kind: Pod  # Определяет тип объекта, который вы создаете. В данном случае это Pod.
 metadata:
@@ -14,8 +14,9 @@ spec:
     env:  # Список переменных окружения, которые будут переданы контейнеру.
     - name: ENV_VAR  # Имя переменной окружения.
       value: value  # Значение переменной окружения.
+---
 
-2. Deployment
+#2. Deployment
 apiVersion: apps/v1  # Указывает на версию API Kubernetes, используемую для создания объекта Deployment. Для деплоев используется "apps/v1".
 kind: Deployment  # Определяет тип объекта, который вы создаете. В данном случае это Deployment.
 metadata:
@@ -44,8 +45,9 @@ spec:
           limits:
             memory: "128Mi"  # Максимальное количество памяти, которое может использовать контейнер.
             cpu: "500m"  # Максимальное количество CPU, которое может использовать контейнер. 500m означает 0.5 CPU.
+---
 
-3. Service
+#3. Service
 apiVersion: v1  # Указывает на версию API Kubernetes, используемую для создания объекта Service. Для сервисов используется "v1".
 kind: Service  # Определяет тип объекта, который вы создаете. В данном случае это Service.
 metadata:
@@ -60,8 +62,9 @@ spec:
     port: 80  # Порт, на который сервис будет принимать запросы от клиентов.
     targetPort: 80  # Порт внутри пода, на который сервис будет перенаправлять запросы. Этот порт должен совпадать с портом контейнера.
   type: ClusterIP  # Тип сервиса. ClusterIP создает внутренний IP-адрес для использования внутри кластера. Другие типы включают NodePort, LoadBalancer и ExternalName.
+---
 
-4. ConfigMap
+#4. ConfigMap
 apiVersion: v1  # Указывает на версию API Kubernetes, используемую для создания объекта ConfigMap. Для конфигурационных карт используется "v1".
 kind: ConfigMap  # Определяет тип объекта, который вы создаете. В данном случае это ConfigMap.
 metadata:
@@ -69,8 +72,9 @@ metadata:
 data:  # Данные, хранящиеся в ConfigMap, представлены в виде пар ключ-значение. Значения хранятся в виде обычного текста.
   config-key: config-value  # Произвольная пара ключ-значение. "config-key" это ключ, а "config-value" это значение.
   another-config-key: another-config-value  # Еще одна произвольная пара ключ-значение. "another-config-key" это ключ, а "another-config-value" это значение.
+---
 
-5. Secret
+#5. Secret
 apiVersion: v1  # Указывает на версию API Kubernetes, используемую для создания объекта Secret. Для секретов используется "v1".
 kind: Secret  # Определяет тип объекта, который вы создаете. В данном случае это Secret.
 metadata:
@@ -79,8 +83,9 @@ type: Opaque  # Тип секрета. Opaque указывает на произ
 data:  # Данные, хранящиеся в секрете, представлены в виде пар ключ-значение. Значения должны быть закодированы в base64.
   username: YWRtaW4=  # Закодированное в base64 значение "admin". "username" это ключ.
   password: MWYyZDFlMmU2N2Rm  # Закодированное в base64 значение "1f2d1e2e67df". "password" это ключ.
+---
 
-6. PersistentVolume (PV)
+#6. PersistentVolume (PV)
 apiVersion: v1  # Указывает на версию API Kubernetes, используемую для создания объекта PersistentVolume. Для персистентных томов используется "v1".
 kind: PersistentVolume  # Определяет тип объекта, который вы создаете. В данном случае это PersistentVolume.
 metadata:
@@ -93,8 +98,9 @@ spec:
   persistentVolumeReclaimPolicy: Retain  # Политика рекламации для тома. Retain сохраняет данные после удаления PVC. Другие опции включают Recycle и Delete.
   hostPath:
     path: /mnt/data  # Путь на хосте, который будет смонтирован в PV. Используется для тестирования и разработки.
+---
 
-7. PersistentVolumeClaim (PVC)
+#7. PersistentVolumeClaim (PVC)
 apiVersion: v1  # Указывает на версию API Kubernetes, используемую для создания объекта PersistentVolumeClaim. Для запросов персистентных томов используется "v1".
 kind: PersistentVolumeClaim  # Определяет тип объекта, который вы создаете. В данном случае это PersistentVolumeClaim.
 metadata:
@@ -105,8 +111,9 @@ spec:
   resources:
     requests:
       storage: 1Gi  # Объем хранилища, запрашиваемый для этого PVC. Указывается в единицах измерения, таких как Gi (гигабайты).
+---
 
-8.Ingress
+#8.Ingress
 apiVersion: networking.k8s.io/v1  # Указывает на версию API Kubernetes, используемую для создания объекта Ingress. Для Ingress используется "networking.k8s.io/v1".
 kind: Ingress  # Определяет тип объекта, который вы создаете. В данном случае это Ingress.
 metadata:
@@ -125,8 +132,9 @@ spec:
             name: my-service  # Имя сервиса, к которому будут направляться запросы. Сервис должен существовать в том же namespace.
             port:
               number: 80  # Порт сервиса, на который будут направляться запросы. Этот порт должен быть определен в сервисе.
+---
 
-9. Конфиг кластера для миникуба
+#9. Конфиг кластера для миникуба
 apiVersion: v1  # Версия API, используемая для конфигурации Minikube.
 kind: Config  # Определяет тип объекта, в данном случае это конфигурация Minikube.
 metadata:
@@ -197,8 +205,8 @@ profiles:
   - name: test  # Имя второго профиля.
     cpus: 4  # Количество CPU для этого профиля.
     memory: 8192  # Количество памяти (в МБ) для этого профиля.
-
-10. Kubernetes Cluster Configuration (kubeadm)
+---
+#10. Kubernetes Cluster Configuration (kubeadm)
 apiVersion: kubeadm.k8s.io/v1beta3  # Указывает на версию API, используемую kubeadm для настройки кластера. В данном случае это "v1beta3".
 kind: ClusterConfiguration  # Определяет тип объекта, который описывает конфигурацию всего кластера.
 metadata:
