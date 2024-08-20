@@ -4,8 +4,13 @@ data "vkcs_compute_flavor" "compute" {
 }
 
 # получаем id образа ОС по имени образа. 
-data "vkcs_images_image" "compute" {
-  name = "ubuntu-22-202404160933.gitd6495fe9" # Узнать с помощью команды openstack image list
+data "vkcs_images_image" "server-1" {
+  name = "nginx-server-1" # Узнать с помощью команды openstack image list
+}
+
+
+data "vkcs_images_image" "server-2" {
+  name = "nginx-server-2" # Узнать с помощью команды openstack image list
 }
 
 # подключаем существующий ssh ключ, который уже добавлен в облаке

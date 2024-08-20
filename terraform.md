@@ -69,3 +69,38 @@ chkconfig httpd on
 ```
 
 Тестировать скрипты мы можем введя команду  terraform console
+
+
+
+
+
+# Packer от хашикорп для упакови образов и отправки через openstack в vk cloud
+
+## Вариант1
+Устанавливаем ключ и удаляем старые записи от hashicorp в /etc/apt/sources.list.d  
+
+``` bash 
+sudo -s
+wget -O- https://apt.releases.hashicorp.com/gpg |
+    gpg --dearmor > /usr/share/keyrings/hashicorp-archive-keyring.gpg  
+
+echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" > /etc/apt/sources.list.d/hashicorp.list
+apt update  
+
+packer plugins install github.com/hashicorp/openstack
+
+#Устанавливаем Packer  
+sudo apt-get update && sudo apt-get install packer
+```
+##  Вариант2
+
+Взять бинарник с зеркала vk
+https://hashicorp-releases.mcs.mail.ru/packer/
+
+packer plugins install github.com/hashicorp/openstack
+
+## Использование Packer с vk cloud
++ Создаем файлы из папки packer.
++ packer build nginx1.pkr.hcl Запускаем команду создания образа. Пакер запускает виртуальную машину на основе этого образа в облаке. Выполняет все необходимые команды. Делает снимок виртуальной машины, делает образ ОС из этого снимка и загружает его в облаке в раздел образы. Доступ идет через наши api данные из личного кабинета. По тем же данным что и работает openstack
+
+packer build nginx2.pkr.hcl   запуск создания образа

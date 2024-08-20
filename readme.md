@@ -1,63 +1,77 @@
+
+# SSH
+ssh-keygen На локальной машине генерируем ssh ключи находясь в домашней директории, везде enter  
+cat id_rsa.pub Выводим публичный ключ и копируем его на любую машину или сервис куда хотим подключиться по ssh  
+Для облаков часто нужно чтобы права на частный ключ были выданы 400, т.е. права только на чтение для пользователя владельца и все. Файл принимает такой вид:  
+-r--------  1 alex alex 2590 авг 16 13:11 id_rsa
+  
+если хотим выйти то пишем exit  
+если хотим выключить удаленную машину то sudo poweroff  
+
+
 # Пути, логи, конфигурации
 
-Добавление репозитория вручную. Например, когда не получается добавить gpg ключ
+Добавление репозитория вручную. Например, когда не получается добавить gpg ключ  
 sudo nano /etc/apt/sources.list
+
+## Nginx
+ /var/www/html/index.html
 
 
 # Установки приложений
 
-## Packer от хашикорп для упакови образов и отправки через openstack в vk cloud
-
-Устанавливаем ключ и удаляем старые записи от hashicorp в /etc/apt/sources.list.d
-
-``` bash 
-sudo -s
-wget -O- https://apt.releases.hashicorp.com/gpg |
-    gpg --dearmor > /usr/share/keyrings/hashicorp-archive-keyring.gpg  
-
-echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" > /etc/apt/sources.list.d/hashicorp.list
-apt update  
-
-#Устанавливаем Packer  
-sudo apt-get update && sudo apt-get install packer
-```
 
 
 
 ## Установка бинарных приложений на примере Minikube и Terraform
 
-Minikube  
+### Minikube  
 curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 \
   && chmod +x minikube  
 sudo mkdir -p /usr/local/bin/  
 sudo install minikube /usr/local/bin/  
 
-Terraform  
+### Terraform  
+Берем с зеркала вк https://hashicorp-releases.mcs.mail.ru/
 Копируем бинарник домашнюю директорию /home/alex  
 Даем права на выполнение chmod +x terraform  
 Устанавливаем sudo install terraform /usr/local/bin/  
-
+  
+  
 # Разное
 
 ## Замена раскладки на alt shift
-gsettings set org.gnome.desktop.wm.keybindings switch-input-source "['<Shift>Alt_L']"
-gsettings set org.gnome.desktop.wm.keybindings switch-input-source-backward "['<Alt>Shift_L']"
+gsettings set org.gnome.desktop.wm.keybindings switch-input-source "['<Shift>Alt_L']"  
+gsettings set org.gnome.desktop.wm.keybindings switch-input-source-backward "['<Alt>Shift_L']"  
+  
+## переименовать хост  
+sudo vim /etc/hostname 	задаем в этом файле имя, например alexcomp  
 
-переименовать хост
-sudo vim /etc/hostname 	задаем в этом файле имя, например alexcomp
+# Alias алиасы
+Добавляем в файл .bashrc в домашней директории
+```bash
+alias pro="cd D/YANDEXDISK/1DEVOPS/alex-info"
+alias lsa="ls -la"
+alias t="terraform"
+alias k="kubectl"
+```
 
 # Файлы 
 ## Переименование и перемещение файлов и папок
-Переместить или переименовать файл
-$ mv опции файл-источник файл-приемник
-mv file1 directory1 	скопировать file1 в директорию directory1 
-mv file1 ./directory1 	тоже самое
+Переместить или переименовать файл  
+```bash
+$ mv опции файл-источник файл-приемник  
+mv file1 directory1 	скопировать file1 в директорию directory1  
+mv file1 ./directory1 	тоже самое  
+```
 
 ## Копирование
-копирование файла в другой файл с указанным именем:
-$ cp опции /путь/к/файлу/источнику /путь/к/файлу/назначения
-Полное копирование, пример
+Копирование файла в другой файл с указанным именем:  
+$ cp опции /путь/к/файлу/источнику /путь/к/файлу/назначения  
+Полное копирование, пример  
+```bash
 sudo cp -a /tmp/wordpress/. /var/www/wordpress
+```
 
 ## УДАЛЕНИЕ
 Для удаления директорий, вместе с файлами и поддиректориями используется опция -R, например:
@@ -152,14 +166,16 @@ df -h 		занятое место на дисках
 sudo lsblk	инфа о разделах на диске
 
 # ПРАВА ГРУППЫ ПОЛЬЗОВАТЕЛИ
-groups			список групп в которых состоит текущий пользователь
-chmod +x myfile  						добавляет права на выполнение для пользователя, группы и остальных 
-chmod u=rwx,g=rx,o=r /home/user/dir1	присваивает определенные права
+groups			список групп в которых состоит текущий пользователь  
+chmod +x myfile  						добавляет права на выполнение для пользователя, группы и остальных  
+chmod u=rwx,g=rx,o=r /home/user/dir1	присваивает определенные права  
 chmod u=rwx,g=rx,o=r dir1 				тут присваиваем нужные права для пользователя, группы и остальных
-
-$ chown пользователь опции /путь/к/файлу
-sudo chown alex:alex terraform			сменить пользователя и группу для файла или папки
+  
+$ chown пользователь опции /путь/к/файлу  
+sudo chown alex:alex terraform			сменить пользователя и группу для файла или папки  
 sudo chown -R alex:alex terraform			сменить пользователя и группу для файла или папки рекурсивно
+sudo chown -R alex:alex \!DEVOPS\ VIDEO/ 	где значек \  это экранирование символа
+
 
 # GIT
 

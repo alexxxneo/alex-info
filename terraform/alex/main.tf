@@ -8,13 +8,14 @@ resource "vkcs_compute_instance" "sng_1" {
                                               # так же при создании мы можем указать чтобы создавалась новая пара ключей
   security_groups         = ["default", "ssh+www"] # наборы сетевых правил. тут откроются порты стандартные,  ssh порт 21 и www 443, 80
   availability_zone       = var.availability_zone_name # регион  берется из объявленной одноименной переменной ранее
+  image_id = data.vkcs_images_image.server-1.id
 
   # блок, опысывающий наш загрузочный диск
   block_device {
-    uuid                  = data.vkcs_images_image.compute.id
+    uuid                  = data.vkcs_images_image.server-1.id
     source_type           = "image"
     destination_type      = "volume"
-    volume_type           = "ceph-ssd" # тип диска. можем указать hdd, hiops и т.д.
+    volume_type           = "high-iops" # тип диска. можем указать hdd, hiops и т.д.
     volume_size           = 10  # размер в ГБ
     boot_index            = 0
     delete_on_termination = true
@@ -51,15 +52,15 @@ resource "vkcs_compute_instance" "sng_2" {
   name                    = "sng_2"
   flavor_id               = data.vkcs_compute_flavor.compute.id
   key_pair                = data.vkcs_compute_keypair.sng.id
-  security_groups         = ["default"]
+  security_groups         = ["default", "ssh+www"]
   availability_zone       = var.availability_zone_name
-
+  image_id = data.vkcs_images_image.server-2.id
 
   block_device {
-    uuid                  = data.vkcs_images_image.compute.id
+    uuid                  = data.vkcs_images_image.server-2.id
     source_type           = "image"
     destination_type      = "volume"
-    volume_type           = "ceph-ssd"
+    volume_type           = "high-iops"
     volume_size           = 10
     boot_index            = 0
     delete_on_termination = true
@@ -88,14 +89,6 @@ resource "vkcs_compute_floatingip_associate" "sng_2" {
   floating_ip = vkcs_networking_floatingip.sng_2.address
   instance_id = vkcs_compute_instance.sng_2.id
 }
-
-
-
-# Выводим по окончанию создания ресурсов терраформом адрес плавающего ip
-output "instance_fip" {
-  value = vkcs_networking_floatingip.sng_1.address
-}
-
 
 
 # Получаем уже существующую внешнюю сеть с интернет доступом
@@ -189,4 +182,13 @@ resource "vkcs_lb_member" "sng_2" {
   pool_id = "${vkcs_lb_pool.sng.id}"
   subnet_id = "${vkcs_networking_subnet.sng.id}"
   weight = 5
+}
+
+
+
+
+
+# Выводим по окончанию создания ресурсов терраформом адрес плавающего ip
+output "instance_fip" {
+  value = vkcs_networking_floatingip.sng_lb.address
 }
