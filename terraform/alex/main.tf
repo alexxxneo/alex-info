@@ -131,7 +131,7 @@ resource "vkcs_networking_router_interface" "sng" {
 #  Создаем балансировщик нагрузки loadbalancer
 resource "vkcs_lb_loadbalancer" "sng" {
    name = "sng_loadbalancer"
-   vip_subnet_id = "${vkcs_networking_subnet.sng.id}" # указываем к какой подсети он бюдует подключен 
+   vip_subnet_id = "${vkcs_networking_subnet.sng.id}" # указываем к какой подсети он будет подключен 
    tags = ["sng"]
  }
 

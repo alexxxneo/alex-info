@@ -1,0 +1,18 @@
+version: '3'
+
+services:
+  nginx:
+    image: nginx
+    volumes:
+      - ./:/var/www/ # прокидываем сайт
+      - ./nginx/conf.d/:/etc/nginx/conf.d/ # прокидываем конфиг nginx
+    ports:
+      - "8080:80"
+    container_name: app_nginx
+    depends_on:
+      - php
+
+  php:
+    image: php:7.2-fpm
+    volumes:
+      - ./:/var/www
