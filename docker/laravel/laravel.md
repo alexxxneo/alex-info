@@ -290,17 +290,10 @@ networks:
 + запустили docker compose -f docker-compose-prod.yam up -d
 + все заработало
 + залили на гитлаб
-+ устанавливаем гитраннеры на прод и дев https://docs.gitlab.com/runner/install/  
-https://docs.gitlab.com/runner/install/linux-repository.html
-  ```bash
-  curl -L "https://packages.gitlab.com/install/repositories/runner/gitlab-runner/script.deb.sh" | sudo bash
-  
-  sudo apt-get install gitlab-runner
-
-
-```
-если не работает то через бинарник:
++ устанавливаем гитлабраннеры на прод и дев через бинарник  и все СТРОГО ЧЕРЕЗ SUDO:
 https://docs.gitlab.com/runner/install/linux-manually.html  
+
+
 ```bash
 sudo curl -L --output /usr/local/bin/gitlab-runner "https://s3.dualstack.us-east-1.amazonaws.com/gitlab-runner-downloads/latest/binaries/gitlab-runner-linux-amd64"
 
@@ -314,14 +307,156 @@ sudo gitlab-runner install --user=root
 sudo gitlab-runner start
 
 # только сначала создаем раннер для проекта в разделе настройки cicd runners
-sudo gitlab-runner register  --url https://gitlab.com  --token glrt-vMwGxPkvCYb8sR1HkDLZ
+sudo gitlab-runner register  --url https://gitlab.com  --token glrt-2tz3SnQJmHTtdntAjsUn
+#для develop 
+sudo gitlab-runner register  --url https://gitlab.com  --token glrt-4RMfwMf4xx9t4_e1A_eu
 
- sudo gitlab-runner restart
+sudo gitlab-runner restart
 
 ```
-Создаем gitlab-ci.yml
-Пушим в гитлаб
-в гитлабе создаем новую ветку develop и подтягиваем ее в локальный репозиторий
++ Устанавливаем git на удаленном серваке чтожбы раннеры могли выполнятся
++ в гитлабе создаем новую ветку develop и подтягиваем ее в локальный репозиторий
++ Создаем gitlab-ci.yml и пушим. Смотрим выполение тестпайплайна
+```yaml
+stages:
+  - first
+  - second
+  - third
+
+print_test:
+  stage: first
+  tags:
+    - build
+  only:
+    - develop
+  script:
+    - echo "another:$CI_COMMIT_SHA/$CI_COMMIT_TITLE"
+
+print_second:
+  stage: second
+  tags:
+    - build
+  only:
+    - develop
+  script:
+    - echo "app:$CI_REGISTRY_USER/$CI_REGISTRY/$CI_RUNNER_TAGS"
+print_third:
+  stage: third
+  tags:
+    - build
+  only:
+    - develop
+  script:
+    - echo "Hello Alex from third 3333333333"
+```
++ Создаем переменнные в гитлабе. Protect variable - Когда эта опция включена, переменная будет доступна только для пайплайнов, которые запускаются на защищённых ветках (например, main, production) или для защищённых тегов.
+Это полезно для сохранения безопасности важных данных (таких как ключи доступа или пароли), чтобы они не утекли через неопределённые ветки или тестовые среды.  
+Expand variable reference (Развернуть ссылку на переменную): При включении этой опции значение переменной может содержать ссылки на другие переменные с использованием синтаксиса $.
+Например, если у вас есть две переменные:
+API_URL = https://api.example.com
+FULL_API_URL = ${API_URL}/v1
+Если опция включена, переменная FULL_API_URL развернётся как https://api.example.com/v1, используя значение переменной API_URL.
+Без этой опции, переменная FULL_API_URL будет интерпретироваться буквально как ${API_URL}/v1.
+
+Для проекта на October CMS
+### 1. **Переменные базы данных**:
+   - **DB_HOST**: Адрес сервера базы данных (например, `localhost` или IP-адрес внешнего сервера).
+   - **DB_DATABASE**: Имя базы данных для проекта October CMS.
+   - **DB_USERNAME**: Имя пользователя базы данных.
+   - **DB_PASSWORD**: Пароль для пользователя базы данных.
+   - **DB_PORT**: Порт для подключения к базе данных (по умолчанию MySQL использует порт `3306`).
+
+Пример:
+```bash
+DB_HOST = localhost
+DB_DATABASE = october_cms
+DB_USERNAME = your_db_user
+DB_PASSWORD = your_db_password
+DB_PORT = 3306
+```
+
+### 2. **Переменные для окружения Laravel/October CMS**:
+   - **APP_ENV**: Указывает окружение проекта (`production`, `local`, `staging`).
+   - **APP_KEY**: Ключ шифрования для приложения, который можно сгенерировать командой `php artisan key:generate`.
+   - **APP_DEBUG**: Включение или отключение отладки (`true` для разработки, `false` для продакшн).
+   - **APP_URL**: URL вашего приложения, например, `https://example.com`.
+
+Пример:
+```bash
+APP_ENV = production
+APP_KEY = base64:qwertyuiop1234567890==  # Сгенерированный ключ
+APP_DEBUG = false
+APP_URL = https://example.com
+```
+
+### 3. **Переменные для управления GitLab CI/CD**:
+   - **CI_COMPOSER_INSTALL_FLAGS**: Флаги для установки зависимостей через Composer. Например, `--no-dev` для продакшн или `--prefer-dist` для кэширования зависимостей.
+   
+Пример:
+```bash
+CI_COMPOSER_INSTALL_FLAGS = --no-dev --prefer-dist
+```
+
+### 4. **Переменные для кэширования** (по желанию):
+   - **CACHE_DRIVER**: Драйвер кэширования, например, `file` или `redis`, если используется Redis.
+   - **SESSION_DRIVER**: Драйвер сессий, например, `file` или `database`.
+
+Пример:
+```bash
+CACHE_DRIVER = file
+SESSION_DRIVER = file
+```
+
+### 5. **Дополнительные переменные для развертывания**:
+   - **DEPLOY_USER** и **DEPLOY_PASSWORD**: Учётные данные для доступа к серверу при деплое (если используется автоматическое развертывание).
+   - **DEPLOY_HOST**: Адрес сервера для деплоя.
+
+Эти переменные нужно добавить в **Settings > CI / CD > Variables** в вашем проекте GitLab, чтобы они были доступны во время выполнения пайплайна.
+
+gitlabci принимает вид
+```yaml
+stages:
+  - first
+
+print_test:
+  stage: first
+  tags:
+    - build
+  only:
+    - develop
+  script:
+    - export NEW="blalblalba" # создаем новую переменную прямо отсюда
+    - echo $NEW
+    - echo $APP_DEBUG
+    - echo $APP_ENV
+    - echo $APP_URL
+    - echo $DB_CONNECTION
+    - echo $DB_DATABASE
+    - echo $DB_HOST
+    - echo $DB_PASSWORD
+    - echo $DB_PORT
+    - echo $DB_ROOT_PASSWORD
+    - echo $DB_USERNAME
+
+```
++ 
++ 
++ 
++ 
++ 
++ 
++ 
++ 
++ 
++ 
++ 
++ 
++ 
++ 
++ 
++ 
++ 
+
 берем нужные переменные в https://docs.gitlab.com/ee/ci/variables/predefined_variables.html
 к примеру CI_COMMIT_SHA
 
