@@ -151,6 +151,7 @@ alias pro="cd D/YANDEXDISK/1DEVOPS/alex-info"
 alias lsa="ls -la"
 alias t="terraform"
 alias k="kubectl"
+alias duh="du -h --max-depth=1"
 ```
 
 # Файлы 
