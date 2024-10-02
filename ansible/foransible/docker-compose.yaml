@@ -1,6 +1,6 @@
 services:
   container1:
-    image: ansible_client
+    image: ansible-client
     container_name: container1
     networks:
       - ans_net
@@ -8,7 +8,7 @@ services:
       - "22:22"  
 
   container2:
-    image: ansible_client 
+    image: ansible-client 
     container_name: container2
     networks:
       - ans_net
@@ -16,7 +16,7 @@ services:
       - "23:22"  
 
   container3:
-    image: ansible_client  
+    image: ansible-client  
     container_name: container3
     networks:
       - ans_net
@@ -24,7 +24,7 @@ services:
       - "24:22"  
 
   container4:
-    image: ansible_client  
+    image: ansible-client  
     container_name: container4
     networks:
       - ans_net
@@ -32,7 +32,7 @@ services:
       - "25:22"  
 
   container5:
-    image: ansible_client  
+    image: ansible-client  
     container_name: container5
     networks:
       - ans_net
@@ -40,12 +40,13 @@ services:
       - "26:22"  
   
   container6:
-    image: ansible_client  
+    image: ansible-client  
     container_name: container6
     networks:
       - ans_net
     ports:
       - "27:22"  
+    
   
 networks:
   ans_net:

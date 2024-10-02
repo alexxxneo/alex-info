@@ -18,15 +18,12 @@ Ansible — это инструмент автоматизации, которы
 
 Ниже приведён список наиболее часто используемых команд Ansible с примерами и подробными описаниями.
 
-### 1. `ansible`
 
-Команда `ansible` используется для выполнения одноразовых задач на удалённых узлах, таких как проверка доступности или запуск команды.
-
-**Синтаксис:**
+ **Синтаксис:**
 ```bash
 ansible <host-pattern> -m <module> -a "<arguments>"
 ```
-
+## 1. `ansible`
 **Примеры:**
 
 1. **Проверка доступности узлов (ping):**
@@ -47,7 +44,8 @@ ansible <host-pattern> -m <module> -a "<arguments>"
    ```
    Создаёт пустой файл `/tmp/testfile` на всех узлах группы `webservers`.
 
-### 2. `ansible-playbook`
+
+## 2. `ansible-playbook`
 
 Команда `ansible-playbook` используется для выполнения плейбуков, которые представляют собой наборы задач, определённых в формате YAML.
 
@@ -82,7 +80,7 @@ ansible-playbook <playbook.yml>
    ```
    Выполняет "сухой прогон" плейбука `site.yml`, показывая, какие изменения будут внесены, без фактического их выполнения.
 
-### 3. `ansible-vault`
+## 3. `ansible-vault`
 
 Команда `ansible-vault` используется для шифрования и дешифрования данных, таких как файлы с паролями или плейбуки.
 
@@ -117,7 +115,7 @@ ansible-vault <subcommand> [options]
    ```
    Шифрует существующий файл `vars.yml`.
 
-### 4. `ansible-galaxy`
+## 4. `ansible-galaxy`
 
 Команда `ansible-galaxy` используется для загрузки и управления ролями, доступными в Ansible Galaxy — официальном репозитории ролей.
 
@@ -146,7 +144,7 @@ ansible-galaxy <subcommand> [options]
    ```
    Удаляет установленную роль `rolename`.
 
-### 5. `ansible-config`
+## 5. `ansible-config`
 
 Команда `ansible-config` используется для управления и просмотра конфигурации Ansible.
 
@@ -169,7 +167,7 @@ ansible-config <subcommand> [options]
    ```
    Показывает только изменённые параметры конфигурации.
 
-### 6. `ansible-inventory`
+## 6. `ansible-inventory`
 
 Команда `ansible-inventory` используется для управления и отображения инвентаря Ansible.
 
@@ -192,7 +190,7 @@ ansible-inventory [options]
    ```
    Отображает граф зависимости инвентаря.
 
-### 7. `ansible-doc`
+## 7. `ansible-doc`
 
 Команда `ansible-doc` используется для получения документации по модулям Ansible.
 
@@ -215,7 +213,7 @@ ansible-doc [options] <module>
    ```
    Выводит список всех доступных модулей Ansible.
 
-### 8. `ansible-pull`
+## 8. `ansible-pull`
 
 Команда `ansible-pull` используется для переворота модели управления: вместо того чтобы Ansible управлял узлами, узлы сами могут "подтягивать" плейбуки с сервера.
 
@@ -232,7 +230,7 @@ ansible-pull -U <repository_url> [options]
    ```
    Выполняет плейбук из репозитория Git на локальном узле.
 
-### 9. `ansible-playbook --syntax-check`
+## 9. `ansible-playbook --syntax-check`
 
 Команда `ansible-playbook --syntax-check` используется для проверки синтаксиса плейбука без его выполнения.
 
@@ -249,7 +247,7 @@ ansible-playbook --syntax-check <playbook.yml>
    ```
    Проверяет плейбук `site.yml` на синтаксические ошибки.
 
-### 10. `ansible-playbook --list-tasks`
+## 10. `ansible-playbook --list-tasks`
 
 Команда `ansible-playbook --list-tasks` используется для вывода списка задач в плейбуке без их выполнения.
 
@@ -266,11 +264,11 @@ ansible-playbook --list-tasks <playbook.yml>
    ```
    Выводит список всех задач, определённых в плейбуке `site.yml`.
 
-### Заключение
+## Заключение
 
 Ansible предоставляет мощный набор инструментов для автоматизации управления ИТ-инфраструктурой. Знание команд Ansible и их возможностей позволяет эффективно управлять конфигурацией и развертыванием в различных окружениях.
 
-# PLAYBOOKS ПЛЕЙБУКИ
+## PLAYBOOKS ПЛЕЙБУКИ ПРИМЕРЫ
 
 Ansible плейбуки — это YAML-файлы, которые определяют набор задач для автоматизации управления серверами, приложениями и сетями. Вот несколько самых популярных плейбуков, которые часто используются в повседневной работе DevOps инженеров и системных администраторов.
 
@@ -571,17 +569,26 @@ ansible_user=user
 ansible_ssh_private_key=/home/alex/.ssh/id_rsa
 
 
-## ad-hoc команды  
+## Ad-hoc команды  
 
 ansible all -m shell -a "ls /etc"  
 -m ключ, что указываем это модуль  
 -a ключ, что указываем аргумент  
   
 
+проверка сможет ли сервер подконнектиться к этому url адресу. только заголовки:  
+ansible all -m uri -a "url=https://ya.ru"  
+вместе с телом сайта:  
+ansible all -m uri -a "url=https://ya.ru return_content=yes "
 
+### установка пакетов
+ansible all -m apt -a "name=httpd state=present" -b
++ present значит что пакет должен быть установлен, если его нет, а absent — для удаления пакета.
 
+даем команду чтобы сервис httpd запускался при старте
+ansible all -m service -a "name=httpd state=started enabled=yes" -b
 
-Копирование фала на все сервера  
+## Копирование фала на все сервера  
 ansible all -m copy -a "src=/home/alex/privet.txt dest=/home/user"  
 ansible all -m copy -a "src=/home/alex/privet.txt dest=/home/ mode=777" -b  
 + -b этот параметр указывает, что мы копируем файл в режиме sudo. при необходимости пароль от sudo должен быть указан в переменных подключения **ansible_become_pass=123**  
@@ -696,3 +703,4 @@ ansible all -m file -a "path=/home/privet.txt state=absent" -b
    ```
 
 Эти атрибуты и примеры демонстрируют, как можно использовать модуль `file` в Ansible для выполнения различных операций по управлению файлами и директориями на удалённых системах.
+

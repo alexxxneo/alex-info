@@ -3,10 +3,11 @@ ci/cd для octobercms (laravel)
 
 
 
-# Установка базового ПО для трех окружений Git, Docker и Gitlab runners
+# Установка базового ПО для трех окружений. Git, Docker и Gitlab runners
 Настраиваем 3 окружения: локалка, 2 виртуалки: develop и prod и на все устанавливаем git, docker и gitlab runners
 
 ## Установка Docker
+
 ```bash
 for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove $pkg; done # удаляем конфликтующие пакеты
 
