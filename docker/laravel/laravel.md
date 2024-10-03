@@ -1,9 +1,44 @@
 
 ci/cd для octobercms (laravel)
 
+<!-- TOC -->
 
+- [Develop окружение](#develop-%D0%BE%D0%BA%D1%80%D1%83%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5)
+    - [Создаем docker-compose.devtest.yml](#%D1%81%D0%BE%D0%B7%D0%B4%D0%B0%D0%B5%D0%BC-docker-composedevtestyml)
+    - [Создаем docker-compose.dev.yml](#%D1%81%D0%BE%D0%B7%D0%B4%D0%B0%D0%B5%D0%BC-docker-composedevyml)
+    - [Создаем Dockerfile для прода](#%D1%81%D0%BE%D0%B7%D0%B4%D0%B0%D0%B5%D0%BC-dockerfile-%D0%B4%D0%BB%D1%8F-%D0%BF%D1%80%D0%BE%D0%B4%D0%B0)
+- [Prod окружение](#prod-%D0%BE%D0%BA%D1%80%D1%83%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5)
+    - [Создаем .gitlabci.yml](#%D1%81%D0%BE%D0%B7%D0%B4%D0%B0%D0%B5%D0%BC-gitlabciyml)
+- [Весь процесс. Check list:](#%D0%B2%D0%B5%D1%81%D1%8C-%D0%BF%D1%80%D0%BE%D1%86%D0%B5%D1%81%D1%81-check-list)
+- [Используемые команды и важные действия](#%D0%B8%D1%81%D0%BF%D0%BE%D0%BB%D1%8C%D0%B7%D1%83%D0%B5%D0%BC%D1%8B%D0%B5-%D0%BA%D0%BE%D0%BC%D0%B0%D0%BD%D0%B4%D1%8B-%D0%B8-%D0%B2%D0%B0%D0%B6%D0%BD%D1%8B%D0%B5-%D0%B4%D0%B5%D0%B9%D1%81%D1%82%D0%B2%D0%B8%D1%8F)
+    - [особенности](#%D0%BE%D1%81%D0%BE%D0%B1%D0%B5%D0%BD%D0%BD%D0%BE%D1%81%D1%82%D0%B8)
+    - [Используемые команды](#%D0%B8%D1%81%D0%BF%D0%BE%D0%BB%D1%8C%D0%B7%D1%83%D0%B5%D0%BC%D1%8B%D0%B5-%D0%BA%D0%BE%D0%BC%D0%B0%D0%BD%D0%B4%D1%8B)
+        - [docker команды](#docker-%D0%BA%D0%BE%D0%BC%D0%B0%D0%BD%D0%B4%D1%8B)
+        - [git команды](#git-%D0%BA%D0%BE%D0%BC%D0%B0%D0%BD%D0%B4%D1%8B)
+- [Gitlab переменные](#gitlab-%D0%BF%D0%B5%D1%80%D0%B5%D0%BC%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5)
+        - [CI/CD Pipeline и Job переменные](#cicd-pipeline-%D0%B8-job-%D0%BF%D0%B5%D1%80%D0%B5%D0%BC%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5)
+        - [Переменные проекта](#%D0%BF%D0%B5%D1%80%D0%B5%D0%BC%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5-%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82%D0%B0)
+        - [Переменные окружения и runner'ов](#%D0%BF%D0%B5%D1%80%D0%B5%D0%BC%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5-%D0%BE%D0%BA%D1%80%D1%83%D0%B6%D0%B5%D0%BD%D0%B8%D1%8F-%D0%B8-runner%D0%BE%D0%B2)
+        - [Переменные пользователя](#%D0%BF%D0%B5%D1%80%D0%B5%D0%BC%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5-%D0%BF%D0%BE%D0%BB%D1%8C%D0%B7%D0%BE%D0%B2%D0%B0%D1%82%D0%B5%D0%BB%D1%8F)
+        - [Переменные окружения для Docker и Kubernetes](#%D0%BF%D0%B5%D1%80%D0%B5%D0%BC%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5-%D0%BE%D0%BA%D1%80%D1%83%D0%B6%D0%B5%D0%BD%D0%B8%D1%8F-%D0%B4%D0%BB%D1%8F-docker-%D0%B8-kubernetes)
+        - [Переменные для деплоя](#%D0%BF%D0%B5%D1%80%D0%B5%D0%BC%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5-%D0%B4%D0%BB%D1%8F-%D0%B4%D0%B5%D0%BF%D0%BB%D0%BE%D1%8F)
+        - [Переменные сборки и артефактов](#%D0%BF%D0%B5%D1%80%D0%B5%D0%BC%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5-%D1%81%D0%B1%D0%BE%D1%80%D0%BA%D0%B8-%D0%B8-%D0%B0%D1%80%D1%82%D0%B5%D1%84%D0%B0%D0%BA%D1%82%D0%BE%D0%B2)
+    - [добавляем модуль php-fpm](#%D0%B4%D0%BE%D0%B1%D0%B0%D0%B2%D0%BB%D1%8F%D0%B5%D0%BC-%D0%BC%D0%BE%D0%B4%D1%83%D0%BB%D1%8C-php-fpm)
+    - [Установка composer](#%D1%83%D1%81%D1%82%D0%B0%D0%BD%D0%BE%D0%B2%D0%BA%D0%B0-composer)
+- [nginx.conf теперь имеет вид](#nginxconf-%D1%82%D0%B5%D0%BF%D0%B5%D1%80%D1%8C-%D0%B8%D0%BC%D0%B5%D0%B5%D1%82-%D0%B2%D0%B8%D0%B4)
+- [docker-compose теперь имеет вид](#docker-compose-%D1%82%D0%B5%D0%BF%D0%B5%D1%80%D1%8C-%D0%B8%D0%BC%D0%B5%D0%B5%D1%82-%D0%B2%D0%B8%D0%B4)
+- [добавляем mysql](#%D0%B4%D0%BE%D0%B1%D0%B0%D0%B2%D0%BB%D1%8F%D0%B5%D0%BC-mysql)
+- [October](#october)
+        - [Переменные базы данных:](#%D0%BF%D0%B5%D1%80%D0%B5%D0%BC%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5-%D0%B1%D0%B0%D0%B7%D1%8B-%D0%B4%D0%B0%D0%BD%D0%BD%D1%8B%D1%85)
+        - [Переменные для окружения Laravel/October CMS:](#%D0%BF%D0%B5%D1%80%D0%B5%D0%BC%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5-%D0%B4%D0%BB%D1%8F-%D0%BE%D0%BA%D1%80%D1%83%D0%B6%D0%B5%D0%BD%D0%B8%D1%8F-laraveloctober-cms)
+        - [Переменные для управления GitLab CI/CD:](#%D0%BF%D0%B5%D1%80%D0%B5%D0%BC%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5-%D0%B4%D0%BB%D1%8F-%D1%83%D0%BF%D1%80%D0%B0%D0%B2%D0%BB%D0%B5%D0%BD%D0%B8%D1%8F-gitlab-cicd)
+        - [Переменные для кэширования по желанию:](#%D0%BF%D0%B5%D1%80%D0%B5%D0%BC%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5-%D0%B4%D0%BB%D1%8F-%D0%BA%D1%8D%D1%88%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D1%8F-%D0%BF%D0%BE-%D0%B6%D0%B5%D0%BB%D0%B0%D0%BD%D0%B8%D1%8E)
+        - [Дополнительные переменные для развертывания:](#%D0%B4%D0%BE%D0%BF%D0%BE%D0%BB%D0%BD%D0%B8%D1%82%D0%B5%D0%BB%D1%8C%D0%BD%D1%8B%D0%B5-%D0%BF%D0%B5%D1%80%D0%B5%D0%BC%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5-%D0%B4%D0%BB%D1%8F-%D1%80%D0%B0%D0%B7%D0%B2%D0%B5%D1%80%D1%82%D1%8B%D0%B2%D0%B0%D0%BD%D0%B8%D1%8F)
+- [доп инфо](#%D0%B4%D0%BE%D0%BF-%D0%B8%D0%BD%D1%84%D0%BE)
 
-# Установка базового ПО для трех окружений. Git, Docker и Gitlab runners
+<!-- /TOC -->
+
+## Установка базового ПО для трех окружений. Git, Docker и Gitlab runners
 Настраиваем 3 окружения: локалка, 2 виртуалки: develop и prod и на все устанавливаем git, docker и gitlab runners
 
 ## Установка Docker
@@ -232,6 +267,13 @@ server {
 ```conf
 
 ```
+
+
+
+
+
+
+
 # Develop окружение
 
 Dockerfile используем тот же что и для девокружения
@@ -430,10 +472,11 @@ RUN echo "alias a='artisan'" >> /root/.bashrc
 ```
 
 
-# Prod окружение
-На проде используем  docker-compose.prod.yml - почти такой же как и в прошлый раз, доб
 
-# Создаем .gitlabci.yml
+# Prod окружение
+На проде используем  docker-compose.prod.yml - почти такой же как и в прошлый раз для дев среды, добавляются только прод переменные
+
+## Создаем .gitlabci.yml
 
 ```yml
 # Определяем этапы, которые будут выполняться в процессе CI/CD
@@ -516,6 +559,27 @@ prod_deploy:
     - docker system prune -a -f # очистка всех НЕИСПОЛЬЗУЕМЫХ ресурсов на всякий случай, включая образы, сети, тома 
 
 ```
+
+# Весь процесс. Check list:
+Когда мы коммитим в дев ветку, то 
+1. запускается сборка докер образа с помощью гитлаб раннера с тегом build на локалке - это этап build
+2. Логинимся в докер реджестри в гитлабе
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # Используемые команды и важные действия

@@ -1,0 +1,11 @@
+[PROD_SERVERS_WEB]
+linux1  ansible_host=172.18.0.2     owner=Alex
+linux2  ansible_host=172.18.0.4     owner=Alexx
+linux3  ansible_host=172.18.0.3     owner=Alexxx
+
+
+[all:vars]
+ansible_user=user
+ansible_ssh_private_key=/home/alex/.ssh/id_ed25519
+ansible_become_pass = 123
+ansible_python_interpreter=/usr/bin/python3

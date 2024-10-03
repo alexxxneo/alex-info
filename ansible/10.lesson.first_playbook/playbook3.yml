@@ -1,0 +1,30 @@
+---
+- name: install nginx and upload web page
+  hosts: all
+  become: yes
+
+  vars:
+    source_file: ./mysite/index.html
+    destin_file: /var/www/html
+
+  tasks:
+  - name: Install nginx
+    apt:
+      name: nginx
+      state: latest
+
+  - name: Copy MySite
+    copy: src={{source_file}} dest={{destin_file}} mode=0644
+    notify: RestartNginx # если произошли изменения в копируемых файлах, то ансибл копирует их и вызывает хэндлер, который рестартует nginx
+
+  - name: Start Nginx and enabled on boot
+    service:
+      name: nginx
+      state: started
+      enabled: yes
+
+  handlers: # вызываемый хэндлер для рестарта сервиса nginx
+  - name: RestartNginx
+    service:
+      name: nginx
+      state: restarted

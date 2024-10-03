@@ -264,9 +264,222 @@ ansible-playbook --list-tasks <playbook.yml>
    ```
    Выводит список всех задач, определённых в плейбуке `site.yml`.
 
-## Заключение
 
-Ansible предоставляет мощный набор инструментов для автоматизации управления ИТ-инфраструктурой. Знание команд Ansible и их возможностей позволяет эффективно управлять конфигурацией и развертыванием в различных окружениях.
+## State в разных модулях
+
+В Ansible параметр `state` используется для указания желаемого состояния ресурса (файла, пакета, службы и т.д.). Разные модули поддерживают различные значения для `state`, поэтому набор допустимых вариантов зависит от модуля. Вот некоторые из наиболее распространённых вариантов `state`:
+
+### 1. **Модули для управления пакетами**
+Модули: `yum`, `apt`, `dnf`, `pip`, и другие.
+
+- **present**: Указывает, что пакет должен быть установлен.
+  ```yaml
+  - name: Ensure Apache is installed
+    yum:
+      name: httpd
+      state: present
+  ```
+
+- **absent**: Указывает, что пакет должен быть удалён.
+  ```yaml
+  - name: Ensure Apache is removed
+    apt:
+      name: apache2
+      state: absent
+  ```
+
+- **latest**: Указывает, что должен быть установлен последний доступный пакет.
+  ```yaml
+  - name: Ensure Apache is at latest version
+    yum:
+      name: httpd
+      state: latest
+  ```
+
+- **installed**: Синоним для `present`.
+
+- **removed**: Синоним для `absent`.
+
+### 2. **Модули для управления файлами и директориями**
+Модули: `file`, `copy`, `template`, и другие.
+
+- **file**: Указывает, что объект должен быть файлом.
+  ```yaml
+  - name: Ensure /etc/myconfig is a file
+    file:
+      path: /etc/myconfig
+      state: file
+  ```
+
+- **directory**: Указывает, что объект должен быть директорией.
+  ```yaml
+  - name: Ensure /data is a directory
+    file:
+      path: /data
+      state: directory
+  ```
+
+- **absent**: Указывает, что файл или директория должны быть удалены.
+  ```yaml
+  - name: Ensure /tmp/oldfile is absent
+    file:
+      path: /tmp/oldfile
+      state: absent
+  ```
+
+- **touch**: Обновляет время доступа и модификации файла (или создает его, если он не существует).
+  ```yaml
+  - name: Touch a file to update timestamp
+    file:
+      path: /tmp/somefile
+      state: touch
+  ```
+
+- **link**: Указывает, что объект должен быть символической ссылкой.
+  ```yaml
+  - name: Ensure /tmp/symlink points to /etc/myconfig
+    file:
+      src: /etc/myconfig
+      dest: /tmp/symlink
+      state: link
+  ```
+
+- **hard**: Указывает, что объект должен быть жёсткой ссылкой.
+  ```yaml
+  - name: Create a hard link to /etc/myconfig
+    file:
+      src: /etc/myconfig
+      dest: /tmp/hardlink
+      state: hard
+  ```
+
+### 3. **Модули для управления службами**
+Модули: `service`, `systemd`, и другие.
+
+- **started**: Служба должна быть запущена.
+  ```yaml
+  - name: Ensure Apache is started
+    service:
+      name: httpd
+      state: started
+  ```
+
+- **stopped**: Служба должна быть остановлена.
+  ```yaml
+  - name: Ensure Apache is stopped
+    service:
+      name: httpd
+      state: stopped
+  ```
+
+- **restarted**: Служба должна быть перезапущена.
+  ```yaml
+  - name: Ensure Apache is restarted
+    service:
+      name: httpd
+      state: restarted
+  ```
+
+- **reloaded**: Служба должна перезагрузить конфигурацию без полной перезагрузки.
+  ```yaml
+  - name: Reload Apache configuration
+    service:
+      name: httpd
+      state: reloaded
+  ```
+
+### 4. **Модули для управления пользователями и группами**
+Модули: `user`, `group`.
+
+- **present**: Указывает, что пользователь или группа должны существовать.
+  ```yaml
+  - name: Ensure user 'deploy' exists
+    user:
+      name: deploy
+      state: present
+  ```
+
+- **absent**: Указывает, что пользователь или группа должны быть удалены.
+  ```yaml
+  - name: Ensure user 'olduser' is absent
+    user:
+      name: olduser
+      state: absent
+  ```
+
+### 5. **Модули для управления виртуальными машинами и контейнерами**
+Модули: `docker_container`, `virt`, и другие.
+
+- **started**: Контейнер или ВМ должны быть запущены.
+  ```yaml
+  - name: Ensure Docker container is started
+    docker_container:
+      name: mycontainer
+      state: started
+  ```
+
+- **stopped**: Контейнер или ВМ должны быть остановлены.
+  ```yaml
+  - name: Ensure Docker container is stopped
+    docker_container:
+      name: mycontainer
+      state: stopped
+  ```
+
+- **present**: Контейнер или ВМ должны существовать (но не обязательно быть запущенными).
+  ```yaml
+  - name: Ensure Docker container exists
+    docker_container:
+      name: mycontainer
+      state: present
+  ```
+
+- **absent**: Контейнер или ВМ должны быть удалены.
+  ```yaml
+  - name: Ensure Docker container is removed
+    docker_container:
+      name: mycontainer
+      state: absent
+  ```
+
+### 6. **Модули для управления источниками репозиториев**
+Модули: `git`, `svn`, и другие.
+
+- **present**: Репозиторий должен быть клонирован или обновлён.
+  ```yaml
+  - name: Clone Git repository
+    git:
+      repo: 'https://github.com/myrepo.git'
+      dest: '/path/to/destination'
+      state: present
+  ```
+
+- **absent**: Указывает, что репозиторий должен быть удалён.
+  ```yaml
+  - name: Remove Git repository
+    git:
+      dest: '/path/to/destination'
+      state: absent
+  ```
+
+### 7. **Модули для управления конфигурациями сети**
+Модули: `network`, `nmcli`, и другие.
+
+- **up**: Сетевой интерфейс должен быть активен.
+  ```yaml
+  - name: Bring up network interface
+    nmcli:
+      conn_name: eth0
+      state: up
+  ```
+
+- **down**: Сетевой интерфейс должен быть отключен.
+  ```yaml
+  - name: Bring down network interface
+    nmcli:
+      conn_name: eth0
+      state: down
+  ```
 
 ## PLAYBOOKS ПЛЕЙБУКИ ПРИМЕРЫ
 
@@ -522,14 +735,16 @@ Ansible плейбуки — это YAML-файлы, которые опреде
 # ПРАКТИКА
 
 
-## ansible.cfg
+## конфиг файлы
+
+### ansible.cfg
 
  [defaults]  
  host_key_checking = false  
  inventory         = ./hosts.txt  
  ansible_become_pass = 123  # указываем пароль от sudo
 
- ## inventory
+### inventory
 
 [staging_DB]
 172.18.0.2     
@@ -545,28 +760,12 @@ Ansible плейбуки — это YAML-файлы, которые опреде
 ansible_user=user
 ansible_ssh_private_key=/home/alex/.ssh/id_rsa
 
-# ansible.cfg
+### ansible.cfg
 
  [defaults]  
  host_key_checking = false  # отключаем подверждение подключения
  inventory         = ./hosts.txt  
  ansible_become_pass = 123  # указываем пароль от sudo
-
- # inventory
-
-[staging_DB]
-172.18.0.2     
-
-[staging_WEB]
-172.18.0.3    
-
-[staging_APP]
-172.18.0.4   
-
-
-[all:vars]
-ansible_user=user
-ansible_ssh_private_key=/home/alex/.ssh/id_rsa
 
 
 ## Ad-hoc команды  
@@ -588,7 +787,7 @@ ansible all -m apt -a "name=httpd state=present" -b
 даем команду чтобы сервис httpd запускался при старте
 ansible all -m service -a "name=httpd state=started enabled=yes" -b
 
-## Копирование фала на все сервера  
+### Копирование фала на все сервера  
 ansible all -m copy -a "src=/home/alex/privet.txt dest=/home/user"  
 ansible all -m copy -a "src=/home/alex/privet.txt dest=/home/ mode=777" -b  
 + -b этот параметр указывает, что мы копируем файл в режиме sudo. при необходимости пароль от sudo должен быть указан в переменных подключения **ansible_become_pass=123**  
@@ -608,7 +807,7 @@ ansible all -m file -a "path=/home/privet.txt state=absent" -b
 
 Вот список наиболее часто используемых атрибутов модуля `file`:
 
-### Основные атрибуты модуля `file`
+#### Основные атрибуты модуля `file`
 
 1. **`path`**: 
    - **Описание**: Указывает путь к файлу или директории, над которым будут выполняться действия.
@@ -660,7 +859,7 @@ ansible all -m file -a "path=/home/privet.txt state=absent" -b
     - **Описание**: Определяет, должны ли обрабатываться символические ссылки. По умолчанию `no`, что означает, что символические ссылки не обрабатываются.
     - **Пример**: `follow=yes`
 
-### Примеры использования модуля `file`
+#### Примеры использования модуля `file`
 
 1. **Создание каталога с определенными правами и владельцем:**
 
@@ -700,7 +899,92 @@ ansible all -m file -a "path=/home/privet.txt state=absent" -b
      ansible.builtin.file:
        path: /home/user/updatefile.txt
        state: touch
-   ```
+  ```
 
 Эти атрибуты и примеры демонстрируют, как можно использовать модуль `file` в Ansible для выполнения различных операций по управлению файлами и директориями на удалённых системах.
 
+
+
+# Примеры плейбуков практики
+
+Установка nginx и копирование сайта
+```yaml
+---
+- name: install nginx and upload web page
+  hosts: all
+  become: yes
+
+  vars:
+    source_file: ./mysite/index.html
+    destin_file: /var/www/html
+
+  tasks:
+  - name: Install nginx
+    apt:
+      name: nginx
+      state: latest
+
+  - name: Copy MySite
+    copy: src={{source_file}} dest={{destin_file}} mode=0644
+    notify: RestartNginx # если произошли изменения в копируемых файлах, то ансибл копирует их и вызывает хэндлер, который рестартует nginx
+
+  - name: Start Nginx and enabled on boot
+    service:
+      name: nginx
+      state: started
+      enabled: yes
+
+  handlers: # вызываемый хэндлер для рестарта сервиса nginx
+  - name: RestartNginx
+    service:
+      name: nginx
+      state: restarted
+```
+
+переменные, переменные hosts
+```conf
+[PROD_SERVERS_WEB]
+linux1  ansible_host=172.18.0.2     owner=Alex
+linux2  ansible_host=172.18.0.4     owner=Alexx
+linux3  ansible_host=172.18.0.3     owner=Alexxx
+```
+playbook:
+```yaml
+
+---
+- name: VARS playbook
+  hosts: all
+  become: yes
+
+  vars:
+    message1: Privet
+    message2: Hi Hi
+    secret: SDDLKJHFGKLJSHDFLGKJHFDLKJSHDFKJHGS
+
+  tasks:
+
+  - name: Print Secret var
+    debug:
+      var: secret
+
+  - debug:
+      msg: "Sekretnoe Slovo: {{ secret }}"
+
+  - debug:
+      msg: "Vladelec  -->{{ owner }}<--" #вывод переменной из hosts
+
+  - set_fact: new_var_message="{{ message1 }} {{ message2 }} from {{ owner }}"
+
+  - debug:
+      var: new_var_message 
+
+  - debug:
+      var: ansible_distribution # вывод переменных из команды ansible all -m setup 
+
+# вывод инфы о выполненной команде в shell
+  - shell: uptime
+    register: result # получили ответ в формате json
+
+  - debug:
+      var: result.stdout # вывели
+```

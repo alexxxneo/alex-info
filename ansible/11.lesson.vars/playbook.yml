@@ -1,0 +1,36 @@
+---
+- name: VARS playbook
+  hosts: all
+  become: yes
+
+  vars:
+    message1: Privet
+    message2: Hi Hi
+    secret: SDDLKJHFGKLJSHDFLGKJHFDLKJSHDFKJHGS
+
+  tasks:
+
+  - name: Print Secret var
+    debug:
+      var: secret
+
+  - debug:
+      msg: "Sekretnoe Slovo: {{ secret }}"
+
+  - debug:
+      msg: "Vladelec  -->{{ owner }}<--" #вывод переменной из hosts
+
+  - set_fact: new_var_message="{{ message1 }} {{ message2 }} from {{ owner }}"
+
+  - debug:
+      var: new_var_message 
+
+  - debug:
+      var: ansible_distribution # вывод переменных из команды ansible all -m setup 
+
+# вывод инфы о выполненной команде в shell
+  - shell: uptime
+    register: result # получили ответ в формате json
+
+  - debug:
+      var: result.stdout # вывели

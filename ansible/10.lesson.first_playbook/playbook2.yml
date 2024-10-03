@@ -1,0 +1,17 @@
+---
+- name: Install nginx and up
+  hosts: all
+  become: yes
+
+  tasks:
+  - name: install nginx
+    apt:
+      name: nginx
+      state: latest
+
+  - name: Start and Enabled
+    service:
+      name: nginx
+      state: started
+      enabled: yes
+
