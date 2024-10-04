@@ -1,0 +1,54 @@
+[staging_DB]
+172.18.0.2     
+
+[staging_WEB]
+172.18.0.3    
+
+[staging_APP]
+linux4      ansible_host=172.18.0.4   
+
+
+[prod_DB]
+linux5      ansible_host=172.18.0.5     
+
+[prod_WEB]
+linux6      ansible_host=172.18.0.6   
+
+[prod_APP]
+linux7      ansible_host=172.18.0.7   
+
+
+
+[staging_ALL:children]
+[staging_DB]
+[staging_WEB]
+[staging_APP]
+
+
+[prod_All:children]
+[prod_DB]
+[prod_WEB]
+[prod_APP]
+
+
+
+[DB_ALL:children]
+[staging_DB]
+[prod_DB]
+
+[WEB_ALL:children]
+[staging_WEB]
+[prod_WEB]
+
+[APP_ALL:children]
+[staging_APP]
+[prod_APP]
+
+[RAZONOE:children]
+APP_ALL
+DB_ALL
+
+[all:vars]
+ansible_user=user
+ansible_ssh_private_key=/home/alex/.ssh/id_rsa
+

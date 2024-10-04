@@ -731,11 +731,351 @@ Ansible плейбуки — это YAML-файлы, которые опреде
 **Описание:**
 - **tasks:** Создание пользователя с именем `john` и добавление его в группу `sudo`, а также удаление пользователя `jane`.
 
+## Роли
+В Ansible роли (roles) организуют задачи и переменные в отдельные, легко управляемые компоненты. Роль Ansible состоит из различных каталогов, и каждый раздел выполняет свою функцию, что делает управление инфраструктурой модульным и переиспользуемым.
+
+### Основные разделы роли Ansible:
+
+1. **`tasks/`**: 
+   - Этот каталог содержит основной список задач, которые будут выполняться при вызове роли. 
+   - Основной файл здесь — `main.yml`, который запускает задачи. Дополнительные задачи могут быть разделены на несколько файлов и подключены через `include` или `import_tasks`.
+   
+   **Пример:**
+   ```yaml
+   ---
+   - name: Install Nginx
+     apt:
+       name: nginx
+       state: present
+   ```
+
+2. **`handlers/`**:
+   - В этом каталоге находятся хэндлеры, которые запускаются по уведомлениям из задач (например, перезапуск службы после установки или изменения конфигурации).
+   - Основной файл — `main.yml`. Хэндлеры используются для запуска после успешного изменения состояния задачи.
+
+   **Пример:**
+   ```yaml
+   ---
+   - name: Restart Nginx
+     service:
+       name: nginx
+       state: restarted
+   ```
+
+3. **`templates/`**:
+   - Этот каталог содержит шаблоны Jinja2, которые могут быть использованы для создания файлов конфигурации с динамическими переменными.
+   - Ansible копирует эти шаблоны на хосты, заменяя переменные значениями, определенными в playbook или инвентаре.
+
+   **Пример шаблона (nginx.conf.j2):**
+   ```nginx
+   server {
+       listen 80;
+       server_name {{ domain }};
+       root {{ document_root }};
+   }
+   ```
+
+4. **`files/`**:
+   - Каталог для статических файлов, которые необходимо скопировать на удалённые хосты без изменений. Это могут быть бинарные файлы, скрипты и другие ресурсы, которые не требуют динамического редактирования.
+
+   **Пример использования:**
+   ```yaml
+   - name: Copy myfile
+     copy:
+       src: myfile
+       dest: /etc/myfile
+   ```
+
+5. **`vars/`**:
+   - Этот каталог содержит переменные, которые можно использовать в роли. Файл `main.yml` содержит переменные с жестко заданными значениями. Эти переменные могут использоваться в задачах, шаблонах и других разделах роли.
+
+   **Пример:**
+   ```yaml
+   ---
+   domain: example.com
+   document_root: /var/www/html
+   ```
+
+6. **`defaults/`**:
+   - Этот каталог похож на `vars/`, но значения здесь имеют низкий приоритет, и их можно переопределить через playbook, инвентарь или переменные командной строки.
+   - Используются для определения значений по умолчанию.
+
+   **Пример:**
+   ```yaml
+   ---
+   nginx_version: 1.14
+   ```
+
+7. **`meta/`**:
+   - Здесь хранятся метаданные роли, такие как зависимости от других ролей, минимальная версия Ansible, поддерживаемые операционные системы и другие характеристики.
+   - Файл `main.yml` может содержать ключ `dependencies`, где перечисляются роли, которые должны быть выполнены до текущей роли.
+
+   **Пример:**
+   ```yaml
+   ---
+   dependencies:
+     - { role: common, some_var: some_value }
+   ```
+
+8. **`tests/`**:
+   - В этом каталоге находятся тестовые playbook'и, которые можно использовать для проверки роли. Обычно здесь есть файл `test.yml`, где содержатся тестовые сценарии для запуска и тестирования роли.
+
+9. **`roles/`**:
+   - Этот раздел используется для вложенных ролей, если роль имеет зависимость или требует выполнения другой роли.
+   
+10. **`inventory/`**:
+    - Необязательный раздел, в котором может храниться инвентарь (хосты и группы хостов) для конкретной роли.
+
+11. **`README.md`**:
+    - Документ, который описывает роль, её использование, зависимости и переменные. Полезно для других пользователей или разработчиков, чтобы понять, как работает роль и как её использовать.
+
+#### Дополнительные разделы (не всегда используются):
+- **`facts/`**: Могут использоваться для создания и сохранения пользовательских фактов.
+- **`lookups/`**: Хранит кастомные модули для выполнения пользовательских запросов с хостов или других источников данных.
+- **`plugins/`**: Для пользовательских плагинов, таких как модули, фильтры или callback-плагины.
+
+#### Пример структуры роли:
+```
+my_role/
+├── tasks/
+│   └── main.yml
+├── handlers/
+│   └── main.yml
+├── templates/
+│   └── nginx.conf.j2
+├── files/
+│   └── myfile
+├── vars/
+│   └── main.yml
+├── defaults/
+│   └── main.yml
+├── meta/
+│   └── main.yml
+├── tests/
+│   └── test.yml
+├── README.md
+```
+### Роли на примере развертывания Kubernetes
+
+Вот пример простой роли Ansible для развертывания Kubernetes на нескольких серверах. Этот пример покажет, как установить `kubeadm`, `kubelet`, и `kubectl`, а также как инициализировать мастер-узел и присоединить воркеры.
+
+#### Структура роли:
+
+```
+roles/
+└── kubernetes/
+    ├── tasks/
+    │   ├── install.yml
+    │   └── main.yml
+    ├── handlers/
+    │   └── main.yml
+    ├── templates/
+    ├── files/
+    ├── vars/
+    │   └── main.yml
+    ├── defaults/
+    │   └── main.yml
+    ├── meta/
+    │   └── main.yml
+```
+
+#### 1. `tasks/main.yml` — Основной файл с задачами
+
+Этот файл связывает все задачи из других файлов.
+
+```yaml
+---
+- name: Install Kubernetes packages
+  include_tasks: install.yml
+
+- name: Initialize Kubernetes master node
+  when: ansible_hostname == inventory_hostname and kubernetes_role == "master"
+  include_tasks: init_master.yml
+
+- name: Join worker nodes to cluster
+  when: kubernetes_role == "worker"
+  include_tasks: join_worker.yml
+```
+
+#### 2. `tasks/install.yml` — Установка Kubernetes
+
+Задачи для установки необходимых пакетов Kubernetes на всех хостах (мастер и воркеры).
+
+```yaml
+---
+- name: Install Docker
+  apt:
+    name: docker.io
+    state: present
+    update_cache: yes
+
+- name: Add Kubernetes APT key
+  apt_key:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    state: present
+
+- name: Add Kubernetes APT repository
+  apt_repository:
+    repo: "deb http://apt.kubernetes.io/ kubernetes-xenial main"
+    state: present
+
+- name: Install Kubernetes components
+  apt:
+    name:
+      - kubelet
+      - kubeadm
+      - kubectl
+    state: latest
+    update_cache: yes
+
+- name: Hold Kubernetes packages
+  apt:
+    name: "{{ item }}"
+    state: present
+    package_type: hold
+  loop:
+    - kubelet
+    - kubeadm
+    - kubectl
+
+- name: Enable and start Docker
+  service:
+    name: docker
+    enabled: yes
+    state: started
+```
+
+#### 3. `tasks/init_master.yml` — Инициализация мастер-узла
+
+Этот файл выполняет инициализацию мастер-узла Kubernetes.
+
+```yaml
+---
+- name: Initialize Kubernetes master
+  command: kubeadm init --pod-network-cidr={{ pod_network_cidr }} --apiserver-advertise-address={{ ansible_default_ipv4.address }}
+  register: kubeadm_init
+
+- name: Create Kubernetes config directory for the admin user
+  file:
+    path: /home/{{ admin_user }}/.kube
+    state: directory
+    owner: "{{ admin_user }}"
+    group: "{{ admin_user }}"
+    mode: '0755'
+
+- name: Copy kubeconfig to user home
+  command: "cp -i /etc/kubernetes/admin.conf /home/{{ admin_user }}/.kube/config"
+  become: yes
+  become_user: "{{ admin_user }}"
+
+- name: Set ownership for kubeconfig
+  file:
+    path: /home/{{ admin_user }}/.kube/config
+    owner: "{{ admin_user }}"
+    group: "{{ admin_user }}"
+    mode: '0644'
+
+- name: Install Calico network plugin
+  command: kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+```
+
+#### 4. `tasks/join_worker.yml` — Присоединение воркер-узлов к кластеру
+
+Этот файл выполняет присоединение воркеров к уже существующему кластеру.
+
+```yaml
+---
+- name: Join the Kubernetes cluster
+  command: "{{ kubeadm_join_command }}"
+```
+
+#### 5. `handlers/main.yml` — Хэндлеры для перезапуска сервисов
+
+Этот файл содержит хэндлеры, которые могут быть вызваны для перезапуска служб при изменениях.
+
+```yaml
+---
+- name: Restart kubelet
+  service:
+    name: kubelet
+    state: restarted
+```
+
+#### 6. `vars/main.yml` — Переменные
+
+Здесь хранятся переменные, которые могут быть изменены в зависимости от среды.
+
+```yaml
+---
+pod_network_cidr: "192.168.0.0/16"
+admin_user: "ubuntu"
+```
+
+#### 7. `defaults/main.yml` — Переменные по умолчанию
+
+Эти переменные могут быть переопределены в playbook'е.
+
+```yaml
+---
+kubernetes_role: "worker"
+kubeadm_join_command: ""
+```
+
+### 8. `meta/main.yml` — Метаданные роли
+
+Здесь можно описать зависимости от других ролей.
+
+```yaml
+---
+dependencies: []
+```
+
+#### Playbook для вызова роли
+
+Вот пример playbook'а, который разворачивает Kubernetes, используя эту роль.
+
+```yaml
+---
+- hosts: all
+  become: yes
+  roles:
+    - kubernetes
+
+  vars:
+    kubernetes_role: "{{ group_names[0] }}"
+    kubeadm_join_command: "kubeadm join 192.168.1.100:6443 --token abcdef.0123456789abcdef --discovery-token-ca-cert-hash sha256:..."
+```
+
+#### Инвентарь
+
+Пример инвентаря, где указаны мастер и воркер-узлы.
+
+```
+[master]
+master-node
+
+[worker]
+worker-node-1
+worker-node-2
+```
+
+#### Пояснение к ролям:
+
+1. **Мастер-узел** выполняет инициализацию кластера с помощью `kubeadm init` и устанавливает плагин сети.
+2. **Воркеры** присоединяются к кластеру, используя команду `kubeadm join`, которая должна быть сгенерирована на мастер-узле после инициализации и передана в playbook для воркеров.
+3. **Хэндлеры** используются для перезапуска сервиса `kubelet` при необходимости (например, после изменения конфигурации).
+4. **Файлы и шаблоны** могут быть добавлены в зависимости от потребностей, например, для кастомизации конфигураций Kubernetes или плагинов.
+
+Это пример базовой роли для установки Kubernetes. В зависимости от конкретных требований можно расширять её, добавлять мониторинг (Prometheus), хранение логов (Fluentd), балансировщики и т.д.
+
 
 # ПРАКТИКА
 
+проверка синтаксиса
+ansible-playbook --syntax-check playbook.yml
 
-## конфиг файлы
+
+## Конфиг файлы
 
 ### ansible.cfg
 
@@ -948,7 +1288,9 @@ linux1  ansible_host=172.18.0.2     owner=Alex
 linux2  ansible_host=172.18.0.4     owner=Alexx
 linux3  ansible_host=172.18.0.3     owner=Alexxx
 ```
-playbook:
+
+## Playbook
+
 ```yaml
 
 ---
@@ -988,3 +1330,6 @@ playbook:
   - debug:
       var: result.stdout # вывели
 ```
+
+## Роли
+

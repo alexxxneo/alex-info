@@ -1,0 +1,66 @@
+---
+- name: install httpd and upload web page
+  hosts: all
+  become: yes
+
+  vars:
+    source_dir: ./mysite/
+    destin_dir: /var/www/html
+
+
+  tasks:
+  
+  - name: Check OS
+    debug: var=ansible_os_family
+
+  - block: #--------------RedHat------------
+
+    - name: Install httpd for RedHat
+      yum:
+        name: httpd
+        state: latest
+        
+    - name: Start httpd and enabled on boot for Redhad
+      service:
+        name: httpd
+        state: started
+        enabled: yes
+
+    when: ansible_os_family == "RedHat"
+
+
+  - block: #--------------Debian------------
+
+    - name: Install apache2 for Debian
+      apt:
+        name: apache2
+        state: latest
+
+    - name: Start httpd and enabled on boot for Debian
+      service:
+        name: apache2
+        state: started
+        enabled: yes
+
+    when: ansible_os_family == "Debian"
+
+  - name: Copy MySite
+    copy: src={{ item }} dest={{ destin_dir }} mode=0644
+    with_fileglob: "{{ source_dir }}/*.*"
+    notify:
+       - Restart_httpd # если произошли изменения в копируемых файлах, то ансибл копирует их и вызывает хэндлер, который рестартует httpd
+       - Restart_apache2
+
+
+  handlers: # вызываемый хэндлер для рестарта сервиса httpd
+  - name: Restart_httpd
+    service:
+      name: httpd
+      state: restarted
+    when: ansible_os_family == "RedHat"
+
+  - name: Restart_apache2
+    service:
+      name: apache2
+      state: restarted
+    when: ansible_os_family == "Debian"

@@ -1,0 +1,33 @@
+---
+- name: install httpd and upload web page
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Say Hi to all
+      debug: msg="Hi {{ item }}"
+      loop:
+        - "Alex"
+        - "Alexx"
+        - "Alexxx"
+
+    - name: Loop Until
+      shell: echo -n z >> file1.txt && cat file1.txt
+      register: output
+      delay: 2 # задержка 2 секунды
+      retries: 10 # максимальное количество циклов
+      until: output.stdout.find("zzz")==false
+
+    - name: Print Final Output
+      debug:
+        var: output.stdout
+
+    - name: Install Maaaaany packeges
+      apt:
+        name: "{{ item }}"
+        state: latest
+      loop:
+        - nginx
+        - mc
+        - tree
+

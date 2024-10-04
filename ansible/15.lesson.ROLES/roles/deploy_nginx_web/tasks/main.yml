@@ -1,0 +1,48 @@
+---
+# tasks file for deploy_nginx_web
+- name: Check OS
+  debug: var=ansible_os_family
+
+- block: #--------------RedHat------------
+
+  - name: Install httpd for RedHat
+    yum:
+      name: httpd
+      state: latest
+      
+  - name: Start httpd and enabled on boot for Redhad
+    service:
+      name: httpd
+      state: started
+      enabled: yes
+
+  when: ansible_os_family == "RedHat"
+
+
+- block: #--------------Debian------------
+
+  - name: Install apache2 for Debian
+    apt:
+      name: apache2
+      state: latest
+
+  - name: Start httpd and enabled on boot for Debian
+    service:
+      name: apache2
+      state: started
+      enabled: yes
+
+  when: ansible_os_family == "Debian"
+
+- name: Generate INDEX.HTML file
+  template: src=index.j2 dest={{ destin_dir }}/index.html mode=0644
+  notify:
+    - Restart_httpd # если произошли изменения в копируемых файлах, то ансибл копирует их и вызывает хэндлер, который рестартует httpd
+    - Restart_apache2
+
+- name: Copy MySite
+  copy: src={{ item }} dest={{ destin_dir }} mode=0644
+  with_fileglob: "*.*"
+  notify:
+      - Restart_httpd # если произошли изменения в копируемых файлах, то ансибл копирует их и вызывает хэндлер, который рестартует httpd
+      - Restart_apache2

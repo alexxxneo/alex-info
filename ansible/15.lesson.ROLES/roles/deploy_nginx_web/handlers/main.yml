@@ -1,0 +1,13 @@
+---
+# handlers file for deploy_nginx_web
+- name: Restart_httpd
+  service:
+    name: httpd
+    state: restarted
+  when: ansible_os_family == "RedHat"
+
+- name: Restart_apache2
+  service:
+    name: apache2
+    state: restarted
+  when: ansible_os_family == "Debian"
