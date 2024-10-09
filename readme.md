@@ -142,7 +142,12 @@ sudo install minikube /usr/local/bin/
 ```bash
 sudo chmod +x packer
 sudo mv packer /usr/local/bin/
-packer -autocomplete-install устанавливаем автокомплит
+
+#устанавливаем автокомплит
+packer -autocomplete-install 
+
+# установка плагина для  packer proxmox 
+packer plugin install github.com/hashicorp/proxmox
 ```
   
   
