@@ -117,10 +117,10 @@ sudo nano /etc/apt/sources.list
 
 # Установки приложений
 
+https://hashicorp-releases.mcs.mail.ru/ релизы программ
 
 
-
-## Установка бинарных приложений на примере Minikube и Terraform
+## Установка бинарных приложений на примере Minikube и Terraform и packer
 
 ### Minikube  
 curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 \
@@ -133,6 +133,17 @@ sudo install minikube /usr/local/bin/
 Копируем бинарник домашнюю директорию /home/alex  
 Даем права на выполнение chmod +x terraform  
 Устанавливаем sudo install terraform /usr/local/bin/  
+
+### Packer Установка
++ скачиваем packer
+ https://developer.hashicorp.com/packer/install?product_intent=packer
+ https://hashicorp-releases.mcs.mail.ru/packer/
+
+```bash
+sudo chmod +x packer
+sudo mv packer /usr/local/bin/
+packer -autocomplete-install устанавливаем автокомплит
+```
   
   
 # Разное
