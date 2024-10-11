@@ -1,4 +1,428 @@
 
+# Сеть
+
+Вот список основных команд для работы с сетью в Ubuntu, полезных для DevOps:
+
+### Команды для работы с сетью в Ubuntu
+
+| Команда                                     | Описание                                                |
+|---------------------------------------------|---------------------------------------------------------|
+| `ifconfig`                                  | Отображает настройки сетевых интерфейсов.              |
+| `ip addr`                                   | Выводит информацию о сетевых интерфейсах и их IP-адресах.|
+| `ip link`                                   | Показывает состояние сетевых интерфейсов.               |
+| `ip route`                                  | Отображает таблицу маршрутизации.                       |
+| `ping <адрес>`                              | Проверяет доступность хоста по его IP-адресу или домену.|
+| `traceroute <адрес>`                        | Отображает маршрут до указанного хоста.                 |
+| `nslookup <домен>`                          | Запрашивает информацию о DNS для указанного домена.     |
+| `dig <домен>`                               | Более продвинутая команда для DNS-запросов.            |
+| `curl <url>`                                | Выполняет HTTP-запрос и выводит ответ от сервера.       |
+| `wget <url>`                                | Загружает файл с указанного URL.                        |
+| `netstat -tuln`                             | Показывает открытые порты и службы, слушающие подключения.|
+| `ss -tuln`                                  | Аналог команды netstat, показывает открытые порты.      |
+| `iptables -L`                               | Показывает текущие правила брандмауэра.                 |
+| `ufw status`                                | Показывает статус и правила брандмауэра UFW (Uncomplicated Firewall). |
+| `ufw allow <порт>`                          | Разрешает входящие соединения на указанный порт.        |
+| `ufw deny <порт>`                           | Запрещает входящие соединения на указанный порт.        |
+| `route -n`                                  | Показывает таблицу маршрутизации.                       |
+| `nmcli`                                     | Командный интерфейс для управления сетевыми соединениями (NetworkManager). |
+| `systemctl restart networking`              | Перезапускает сетевой интерфейс.                        |
+| `systemctl status networking`               | Показывает статус сетевого интерфейса.                  |
+| `ip addr add <IP>/<маска> dev <интерфейс>` | Добавляет IP-адрес к указанному сетевому интерфейсу.     |
+| `ip addr del <IP>/<маска> dev <интерфейс>` | Удаляет IP-адрес с указанного сетевого интерфейса.      |
+| `ethtool <интерфейс>`                       | Показывает и настраивает параметры сетевого интерфейса. |
+| `mtr <адрес>`                               | Комбинирует функциональность `ping` и `traceroute`, показывает маршрут и задержку. |
+| `hostname`                                   | Показывает или устанавливает имя хоста системы.         |
+| `hostname -I`                               | Показывает все IP-адреса хоста.                         |
+| `tcpdump`                                   | Захватывает и анализирует пакеты, проходящие через интерфейс. |
+| `iwconfig`                                  | Конфигурирует параметры беспроводных интерфейсов (если применимо). |
+| `iwlist <интерфейс> scan`                   | Сканирует доступные беспроводные сети.                  |
+| `nmcli device status`                       | Показывает состояние всех сетевых устройств.            |
+
+## iptables
+
+Вот 20 популярных примеров использования `iptables`, которые могут быть полезны для DevOps-практиков:
+
+### Примеры использования `iptables` для DevOps
+
+1. **Разрешить SSH доступ**:
+   ```bash
+   sudo iptables -A INPUT -p tcp --dport 22 -j ACCEPT
+   ```
+   Разрешает входящие соединения на порт 22 (SSH).
+
+2. **Разрешить HTTP и HTTPS доступ**:
+   ```bash
+   sudo iptables -A INPUT -p tcp --dport 80 -j ACCEPT
+   sudo iptables -A INPUT -p tcp --dport 443 -j ACCEPT
+   ```
+   Разрешает входящие соединения на порты 80 (HTTP) и 443 (HTTPS).
+
+3. **Блокировать доступ с определенного IP-адреса**:
+   ```bash
+   sudo iptables -A INPUT -s 192.168.1.100 -j DROP
+   ```
+   Блокирует входящие соединения от IP-адреса 192.168.1.100.
+
+4. **Разрешить доступ только с определенного подсети**:
+   ```bash
+   sudo iptables -A INPUT -s 192.168.1.0/24 -j ACCEPT
+   ```
+   Разрешает входящие соединения только с подсети 192.168.1.0/24.
+
+5. **Блокировать все входящие соединения по умолчанию**:
+   ```bash
+   sudo iptables -P INPUT DROP
+   ```
+   Устанавливает политику по умолчанию для входящих соединений на DROP.
+
+6. **Разрешить все исходящие соединения**:
+   ```bash
+   sudo iptables -P OUTPUT ACCEPT
+   ```
+   Устанавливает политику по умолчанию для исходящих соединений на ACCEPT.
+
+7. **Разрешить пинг (ICMP)**:
+   ```bash
+   sudo iptables -A INPUT -p icmp --icmp-type echo-request -j ACCEPT
+   ```
+   Разрешает входящие ICMP-пакеты (пинги).
+
+8. **Лимитировать количество соединений**:
+   ```bash
+   sudo iptables -A INPUT -p tcp --dport 80 -m connlimit --connlimit-above 10 -j REJECT
+   ```
+   Ограничивает количество одновременных соединений на порт 80 до 10.
+
+9. **Перенаправление портов**:
+   ```bash
+   sudo iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8080
+   ```
+   Перенаправляет входящие соединения на порт 80 на порт 8080.
+
+10. **Разрешить доступ только для определенного интерфейса**:
+    ```bash
+    sudo iptables -A INPUT -i eth0 -p tcp --dport 22 -j ACCEPT
+    ```
+    Разрешает доступ по SSH только на интерфейсе `eth0`.
+
+11. **Разрешить доступ к определенному серверу DNS**:
+    ```bash
+    sudo iptables -A INPUT -p udp --dport 53 -s 8.8.8.8 -j ACCEPT
+    ```
+    Разрешает входящие UDP-запросы на порт 53 только от DNS-сервера Google (8.8.8.8).
+
+12. **Запретить доступ к FTP-серверу**:
+    ```bash
+    sudo iptables -A INPUT -p tcp --dport 21 -j DROP
+    ```
+    Блокирует входящие соединения на порт 21 (FTP).
+
+13. **Логирование заблокированных пакетов**:
+    ```bash
+    sudo iptables -A INPUT -j LOG --log-prefix "iptables blocked: "
+    ```
+    Логирует все пакеты, которые были заблокированы.
+
+14. **Сохранение текущих правил**:
+    ```bash
+    sudo iptables-save > /etc/iptables/rules.v4
+    ```
+    Сохраняет текущие правила в файл для восстановления.
+
+15. **Восстановление правил из файла**:
+    ```bash
+    sudo iptables-restore < /etc/iptables/rules.v4
+    ```
+    Восстанавливает правила из файла.
+
+16. **Разрешить доступ к MySQL**:
+    ```bash
+    sudo iptables -A INPUT -p tcp --dport 3306 -j ACCEPT
+    ```
+    Разрешает входящие соединения на порт 3306 (MySQL).
+
+17. **Разрешить доступ к Redis**:
+    ```bash
+    sudo iptables -A INPUT -p tcp --dport 6379 -j ACCEPT
+    ```
+    Разрешает входящие соединения на порт 6379 (Redis).
+
+18. **Блокировка DDoS-атак**:
+    ```bash
+    sudo iptables -A INPUT -p tcp --dport 80 -m limit --limit 1/s -j ACCEPT
+    ```
+    Ограничивает количество входящих соединений на порт 80 до 1 в секунду.
+
+19. **Настройка режима `state`**:
+    ```bash
+    sudo iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+    ```
+    Разрешает входящие пакеты, относящиеся к уже установленным соединениям.
+
+20. **Блокировка всех входящих соединений, кроме определенных**:
+    ```bash
+    sudo iptables -A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+    sudo iptables -A INPUT -p tcp --dport 22 -j ACCEPT
+    sudo iptables -A INPUT -p tcp --dport 80 -j ACCEPT
+    sudo iptables -P INPUT DROP
+    ```
+    Разрешает только SSH и HTTP, блокируя все остальные входящие соединения.
+
+21. **Разрешить доступ только для конкретного IP-адреса**:
+    ```bash
+    sudo iptables -A INPUT -p tcp --dport 80 -s 203.0.113.5 -j ACCEPT
+    ```
+
+22. **Блокировка всех ICMP-запросов**:
+    ```bash
+    sudo iptables -A INPUT -p icmp -j DROP
+    ```
+
+23. **Разрешение только локальных соединений**:
+    ```bash
+    sudo iptables -A INPUT -i lo -j ACCEPT
+    ```
+
+24. **Запретить доступ по протоколу telnet**:
+    ```bash
+    sudo iptables -A INPUT -p tcp --dport 23 -j DROP
+    ```
+
+25. **Разрешить только IPv4 соединения**:
+    ```bash
+    sudo iptables -A INPUT -p ipv4 -j ACCEPT
+    ```
+
+26. **Разрешить доступ к веб-серверу только с определенного IP**:
+    ```bash
+    sudo iptables -A INPUT -p tcp --dport 80 -s 192.168.1.10 -j ACCEPT
+    ```
+
+27. **Блокировка входящих соединений на все порты**:
+    ```bash
+    sudo iptables -A INPUT -j REJECT
+    ```
+
+28. **Разрешить только определенный диапазон IP-адресов**:
+    ```bash
+    sudo iptables -A INPUT -s 192.168.1.0/24 -j ACCEPT
+    ```
+
+29. **Блокировать все входящие соединения, кроме тех, что имеют определенный MAC-адрес**:
+    ```bash
+    sudo iptables -A INPUT -m mac --mac-source 00:11:22:33:44:55 -j ACCEPT
+    ```
+
+30. **Запретить доступ к определенному ресурсу на сайте**:
+    ```bash
+    sudo iptables -A OUTPUT -p tcp --dport 443 -d example.com -j REJECT
+    ```
+
+31. **Блокировка всех входящих соединений из определенного региона**:
+    ```bash
+    sudo iptables -A INPUT -s <IP_диапазон_региона> -j DROP
+    ```
+
+32. **Разрешить только определенные службы (например, только HTTP и HTTPS)**:
+    ```bash
+    sudo iptables -A INPUT -p tcp -m multiport --dports 80,443 -j ACCEPT
+    ```
+
+33. **Разрешить SSH доступ только из локальной сети**:
+    ```bash
+    sudo iptables -A INPUT -p tcp --dport 22 -s 192.168.0.0/16 -j ACCEPT
+    ```
+
+34. **Разрешить исходящий трафик на определенные порты**:
+    ```bash
+    sudo iptables -A OUTPUT -p tcp --dport 53 -j ACCEPT
+    ```
+
+35. **Логировать трафик на порт 80**:
+    ```bash
+    sudo iptables -A INPUT -p tcp --dport 80 -j LOG --log-prefix "HTTP traffic: "
+    ```
+
+36. **Ограничить соединения по времени**:
+    ```bash
+    sudo iptables -A INPUT -p tcp --dport 80 -m time --timestart 08:00 --timestop 18:00 -j ACCEPT
+    ```
+
+37. **Блокировка доступа к определенному домену**:
+    ```bash
+    sudo iptables -A OUTPUT -p tcp -d example.com -j REJECT
+    ```
+
+38. **Ограничение исходящих соединений**:
+    ```bash
+    sudo iptables -A OUTPUT -m connlimit --connlimit-above 5 -j REJECT
+    ```
+
+39. **Разрешить DNS-запросы только для локального сервера**:
+    ```bash
+    sudo iptables -A OUTPUT -p udp --dport 53 -d 192.168.1.1 -j ACCEPT
+    ```
+
+40. **Настройка протоколов для доступа к VPN**:
+    ```bash
+    sudo iptables -A INPUT -p udp --dport 1194 -j ACCEPT  # OpenVPN
+    ```
+
+41. **Блокировка порта RDP (Remote Desktop Protocol)**:
+    ```bash
+    sudo iptables -A INPUT -p tcp --dport 3389 -j DROP
+    ```
+
+42. **Разрешение исходящих запросов только на определенные хосты**:
+    ```bash
+    sudo iptables -A OUTPUT -d 8.8.8.8 -j ACCEPT
+    ```
+
+43. **Разрешить FTP доступ только для определенной подсети**:
+    ```bash
+    sudo iptables -A INPUT -p tcp --dport 21 -s 192.168.0.0/24 -j ACCEPT
+    ```
+
+44. **Запретить доступ к интернету для определенного хоста**:
+    ```bash
+    sudo iptables -A OUTPUT -s 192.168.1.50 -j DROP
+    ```
+
+45. **Логирование всех входящих соединений**:
+    ```bash
+    sudo iptables -A INPUT -j LOG --log-prefix "INCOMING: "
+    ```
+
+46. **Блокировка всего трафика на определенный интерфейс**:
+    ```bash
+    sudo iptables -A INPUT -i eth1 -j DROP
+    ```
+
+47. **Разрешить доступ только для HTTPS и HTTP**:
+    ```bash
+    sudo iptables -A INPUT -p tcp -m multiport --dports 80,443 -j ACCEPT
+    ```
+
+48. **Запретить доступ к определенной базе данных**:
+    ```bash
+    sudo iptables -A INPUT -p tcp --dport 3306 -j DROP
+    ```
+
+49. **Создание правила для блокировки трафика на основе времени**:
+    ```bash
+    sudo iptables -A INPUT -p tcp --dport 22 -m time --timestart 00:00 --timestop 06:00 -j REJECT
+    ```
+
+50. **Блокировка всех входящих соединений, кроме SSH**:
+    ```bash
+    sudo iptables -A INPUT -p tcp --dport 22 -j ACCEPT
+    sudo iptables -A INPUT -j DROP
+    ```
+
+51. **Разрешить ping (ICMP) только из локальной сети**:
+    ```bash
+    sudo iptables -A INPUT -p icmp -s 192.168.0.0/24 -j ACCEPT
+    ```
+
+52. **Разрешить доступ по порту 8080 для всех**:
+    ```bash
+    sudo iptables -A INPUT -p tcp --dport 8080 -j ACCEPT
+    ```
+
+53. **Блокировать доступ к порту MySQL для всех, кроме локальной сети**:
+    ```bash
+    sudo iptables -A INPUT -p tcp --dport 3306 -s 192.168.0.0/24 -j ACCEPT
+    sudo iptables -A INPUT -p tcp --dport 3306 -j DROP
+    ```
+
+54. **Разрешить доступ только для определенного порта для указанного IP**:
+    ```bash
+    sudo iptables -A INPUT -p tcp --dport 443 -s 203.0.113.1 -j ACCEPT
+    ```
+
+55. **Настройка правил для OpenVPN**:
+    ```bash
+    sudo iptables -A INPUT -p udp --dport 1194 -j ACCEPT
+    ```
+
+56. **Блокировка трафика по конкретному порту (например, 25 для SMTP)**:
+    ```bash
+    sudo iptables -A INPUT -p tcp --dport 25 -j DROP
+    ```
+
+57. **Разрешить доступ к базам данных только с локального хоста**:
+    ```bash
+    sudo iptables -A INPUT -p tcp --dport 5432 -s 127.0.0.1 -j ACCEPT
+    ```
+
+58. **Блокировать все соединения, кроме тех, что уже установлены**:
+    ```bash
+    sudo iptables -A INPUT -m conntrack --ctstate ESTABLISHED -j ACCEPT
+    ```
+
+59. **Разрешить доступ к NTP-серверу**:
+    ```bash
+    sudo iptables -A INPUT -p udp --dport 123 -j ACCEPT
+    ```
+
+60. **Запретить соединения с конкретным хостом**:
+    ```bash
+    sudo iptables -A OUTPUT -d 192.0.2.1 -j REJECT
+    ```
+
+61. **Создание правила для логирования и блокировки**:
+    ```bash
+    sudo iptables -A INPUT -p tcp --dport 22 -j LOG --log-prefix "SSH DROP: "
+    sudo iptables -A INPUT -p tcp --dport 22 -j DROP
+    ```
+
+62. **Разрешение только для определенных MAC-адресов**:
+    ```bash
+    sudo iptables -A INPUT -m mac --mac-source 00:11
+
+:22:33:44:55 -j ACCEPT
+    ```
+
+63. **Блокировать доступ к облачному сервису**:
+    ```bash
+    sudo iptables -A OUTPUT -d <IP_облачного_сервиса> -j DROP
+    ```
+
+64. **Разрешить доступ к серверу Redis только из локальной сети**:
+    ```bash
+    sudo iptables -A INPUT -p tcp --dport 6379 -s 192.168.1.0/24 -j ACCEPT
+    ```
+
+65. **Блокировка соединений с определенными диапазонами IP**:
+    ```bash
+    sudo iptables -A INPUT -m iprange --src-range 192.168.1.0-192.168.1.255 -j DROP
+    ```
+
+66. **Блокировать все входящие соединения на определенном интерфейсе**:
+    ```bash
+    sudo iptables -A INPUT -i eth1 -j DROP
+    ```
+
+67. **Разрешение соединений только с определенного интерфейса**:
+    ```bash
+    sudo iptables -A INPUT -i eth0 -j ACCEPT
+    ```
+
+68. **Запретить доступ к FTP**:
+    ```bash
+    sudo iptables -A INPUT -p tcp --dport 21 -j DROP
+    ```
+
+69. **Логирование всех исходящих соединений**:
+    ```bash
+    sudo iptables -A OUTPUT -j LOG --log-prefix "OUTGOING: "
+    ```
+
+70. **Блокировка трафика, используя регулярные выражения**:
+    ```bash
+    sudo iptables -A INPUT -p tcp -m string --string "baduser" --algo bm -j DROP
+    ```
+
 # SSH
 ssh-keygen На локальной машине генерируем ssh ключи находясь в домашней директории, везде enter  
 cat id_rsa.pub Выводим публичный ключ и копируем его на любую машину или сервис куда хотим подключиться по ssh  
