@@ -1,3 +1,22 @@
+# Создание шаблона ubuntu cloud init 22.04 для proxmox
+
+
++ меняем настройки cloud init в вебинтерфейсе
++ запускаем виртуальную машину
++ подсоединяемся по ssh
++ sudo apt install qemu-guest-agent -y      устанавливаем агент qemu обязательно чтобы наши будущие виртуалки с шаблона работали корректно
++ редактируем файл sudo nano /etc/cloud/cloud.cfg
++ добавляем
+```yml
+#install packages
+package_upgrade: true
+packages:
+   - qemu-guest-agent
+```
++ в proxmos'е конвертуруем в шаблон  
+qm template 9000
+
+
 # Перегенерация сертификата для proxmox для добавления адреса
 
 ### Перегенерация сертификата через командную строку
