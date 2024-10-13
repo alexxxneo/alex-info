@@ -1,19 +1,32 @@
 # Создание шаблона ubuntu cloud init 22.04 для proxmox
+1. в proxmox'e:
+```bash
+wget https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img
 
+#создаем виртуальную машину. 9000 это любой idшник
+qm create 9000 --memory 2048 --net0 virtio,bridge=vmbr0 --scsihw virtio-scsi-pci --name ubuntu-cloud-base
 
-+ меняем настройки cloud init в вебинтерфейсе
-+ запускаем виртуальную машину
-+ подсоединяемся по ssh
-+ sudo apt install qemu-guest-agent -y      устанавливаем агент qemu обязательно чтобы наши будущие виртуалки с шаблона работали корректно
-+ редактируем файл sudo nano /etc/cloud/cloud.cfg
-+ добавляем
+#импортируем виртуальный диск в хранилище local-lvm
+qm importdisk 9000 jammy-server-cloudimg-amd64.img local-lvm
+# в конце он пишет диск unused0:local-lvm:vm-9000-disk-0  его и используем в следующей команде
+
+qm set 9000 --scsihw virtio-scsi-pci --scsi0 local-lvm:vm-9000-disk-0 --ide2 local-lvm:cloudinit --boot c -bootdisk scsi0 --serial0 socket --vga serial0 --agent 1
+# должны получить  Logical volume "vm-9000-cloudinit" created.
+# ide2: successfully created disk 'local-lvm:vm-9000-cloudinit,media=cdrom'
+# generating cloud-init ISO
+```
+2.  меняем настройки cloud init в вебинтерфейсе
+3.  запускаем виртуальную машину
+4. подсоединяемся по ssh
+5.  sudo apt install qemu-guest-agent -y      устанавливаем агент qemu обязательно чтобы наши будущие виртуалки с шаблона работали корректно
+6.  редактируем файл sudo nano /etc/cloud/cloud.cfg. Добавляем
 ```yml
 #install packages
 package_upgrade: true
 packages:
    - qemu-guest-agent
 ```
-+ в proxmos'е конвертуруем в шаблон  
+7. в proxmos'е конвертуруем в шаблон  
 qm template 9000
 
 
