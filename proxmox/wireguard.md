@@ -249,8 +249,21 @@ root@anderson:~# ip route get 8.8.8.8
 
 Это будет означать, что интернет-трафик идет через основной интерфейс, а трафик для сети WireGuard будет продолжать идти через `wg0`.
 
+скриптик для реконнекта
+#!/bin/bash
+wg-quick down wg0
+wg-quick up wg0
+
 Теперь трафик идет правильно:
 
 root@anderson:~# ip route get 8.8.8.8
 8.8.8.8 via 192.168.88.1 dev vmbr0 src 192.168.88.217 uid 0 
     cache 
+
+# автоподключение
+```bash
+crontab -e
+@reboot wg-quick up wg0
+* * * * * wg-quick up wg0 > /dev/null 2>&1
+# > /dev/null 2>&1  отключение уведомлений на почту для конкретной задачи
+```
