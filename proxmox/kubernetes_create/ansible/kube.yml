@@ -1,0 +1,103 @@
+---
+- hosts: all  # Выполнение на всех хостах, указанных в файле ansible-hosts.txt
+  become: true  # Выполнение задач с правами суперпользователя (sudo)
+  remote_user: ubuntu  #  определяет каким пользователем будет происходить подключение и выполнение задач. Далее повышаются права и выполняются задачи уже от суперпользователя
+  tasks:
+  - name: Устанавливаем пакеты для работы с apt по HTTPS и другие зависимости
+    apt:
+      name: "{{ packages }}"  # Список пакетов для установки
+      state: present  # Убеждаемся, что пакеты установлены, если нет то устанавливаем пакеты актуальных верси
+      update_cache: yes  # apt update перед установкой
+    vars:
+      packages:  # Определяем переменную 'packages' со списком пакетов
+      - apt-transport-https  # Позволяет apt работать через HTTPS
+      - ca-certificates  # Установка сертификатов для HTTPS
+      - curl  # Утилита для передачи данных с использованием различных протоколов
+      - gnupg-agent  # Менеджер ключей для работы с GPG. Необходим для того, чтобы корректно импортировать и управлять GPG-ключами, что позволяет проверять подлинность пакетов, загружаемых из внешних репозиториев (Docker, Kubernetes). Используется модулем apt_key
+      - software-properties-common  # Утилита для управления репозиториями. Нужна для модуля "apt_repository"
+  
+  - name: Add an apt signing key for Docker  # Добавление ключа для подписи пакетов Docker
+    apt_key:
+      url: https://download.docker.com/linux/ubuntu/gpg  # URL ключа для Docker
+      state: present  # Убедиться, что ключ добавлен
+  
+  - name: Add apt repository for stable version  # Добавление репозитория Docker для стабильной версии
+    apt_repository:
+      repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable  # Указание репозитория для Docker
+      state: present  # Убедиться, что репозиторий добавлен
+  
+  - name: Install docker and its dependencies  # Установка Docker и его зависимостей
+    apt: 
+      name: "{{ packages }}"  # Список пакетов для установки
+      state: present  # Убедиться, что пакеты установлены
+      update_cache: yes  # Обновить кэш apt перед установкой
+    vars:
+      packages:  # Определение переменной 'packages' со списком пакетов для Docker
+      - docker-ce  # Docker Community Edition
+      - docker-ce-cli  # Командная строка Docker
+      - containerd.io  # Среда выполнения контейнеров
+  
+  - name: verify docker installed, enabled, and started  # Проверка, что Docker установлен, включен и запущен
+    service:
+      name: docker  # Управление сервисом Docker
+      state: started  # Убедиться, что сервис запущен
+      enabled: yes  # Убедиться, что сервис включен при загрузке
+  
+  - name: Remove swapfile from /etc/fstab  # Удаление swap из файла fstab
+    mount:
+      name: "{{ item }}"  # Монтируемые файловые системы
+      fstype: swap  # Тип файловой системы swap
+      state: absent  # Удалить запись из fstab
+    with_items:  # Перебор значений для удаления из fstab
+      - swap
+      - none
+  
+  - name: Disable swap  # Отключение swap на системе
+    command: swapoff -a  # Отключить все swap-разделы
+    when: ansible_swaptotal_mb >= 0  # Выполнять только, если swap присутствует (объем памяти swap больше 0)
+    
+  - name: Add an apt signing key for Kubernetes  # Добавление ключа для подписи пакетов Kubernetes
+    apt_key:
+      url: https://packages.cloud.google.com/apt/doc/apt-key.gpg  # URL ключа для Kubernetes
+      state: present  # Убедиться, что ключ добавлен
+
+  - name: Adding apt repository for Kubernetes  # Добавление репозитория Kubernetes
+    apt_repository:
+      repo: deb https://apt.kubernetes.io/ kubernetes-xenial main  # Указание репозитория Kubernetes
+      state: present  # Убедиться, что репозиторий добавлен
+      filename: kubernetes.list  # Указание имени файла репозитория
+
+  - name: Install Kubernetes binaries  # Установка бинарных файлов Kubernetes
+    apt: 
+      name: "{{ packages }}"  # Список пакетов для установки
+      state: present  # Убедиться, что пакеты установлены
+      update_cache: yes  # Обновить кэш apt перед установкой
+    vars:
+      packages:  # Определение переменной 'packages' с конкретными версиями Kubernetes
+        - kubelet=1.23.6-00  # Установка версии kubelet
+        - kubeadm=1.23.6-00  # Установка версии kubeadm
+        - kubectl=1.23.6-00  # Установка версии kubectl
+        
+  - name: hold kubernetes binary versions (prevent from being updated)  # Закрепление версий Kubernetes (чтобы они не обновлялись)
+    dpkg_selections:
+      name: "{{ item }}"  # Имя пакета
+      selection: hold  # Установить версию на удержание (не обновлять)
+    loop:  # Перебор пакетов Kubernetes
+      - kubelet
+      - kubeadm
+      - kubectl
+        
+  - name: Restart kubelet  # Перезапуск сервиса kubelet
+    service:
+      name: kubelet  # Управление сервисом kubelet
+      daemon_reload: yes  # Перезагрузка демонов
+      state: restarted  # Убедиться, что сервис перезапущен
+      
+  - name: add ubuntu user to docker  # Добавление пользователя ubuntu в группу docker
+    user:
+      name: ubuntu  # Имя пользователя
+      group: docker  # Добавить в группу docker
+  
+  - name: reboot to apply swap disable  # Перезагрузка для применения отключения swap
+    reboot:
+      reboot_timeout: 180  # Задержка перед перезагрузкой на 3 минуты (180 секунд)
