@@ -51,7 +51,7 @@ resource "proxmox_vm_qemu" "kube-server" {
         scsi {
             scsi0 {
                 disk {
-                   size            = "15G"
+                   size            = "29900M"
                     storage         = "local-lvm"
                     replicate       = false
                 }
@@ -121,7 +121,7 @@ resource "proxmox_vm_qemu" "kube-agent" {
         scsi {
             scsi0 {
                 disk {
-                   size            = "15G"
+                   size            = "29900M"
                     storage         = "local-lvm"
                     replicate       = false
                 }
@@ -190,7 +190,7 @@ resource "proxmox_vm_qemu" "kube-agent" {
 #         scsi {
 #             scsi0 {
 #                 disk {
-#                    size            = "15G"
+#                    size            = "29900M"
 #                     storage         = "local-lvm"
 #                     replicate       = false
 #                 }
