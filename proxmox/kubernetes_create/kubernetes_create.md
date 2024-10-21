@@ -32,15 +32,15 @@ iface enp0s3 inet manual
 
 auto vmbr0
 iface vmbr0 inet static
-    address 192.168.1.100/24
-    gateway 192.168.1.1
+    address 10.10.10.10/24
+    gateway 10.10.10.1
     bridge_ports enp0s3
     bridge_stp off
     bridge_fd 0
 
 auto vmbr1
 iface vmbr1 inet static
-    address 10.0.0.1/24
+    address 192.168.0.1/16
     bridge_ports none
     bridge_stp off
     bridge_fd 0
@@ -74,8 +74,6 @@ iface vmbr1 inet static
 # Устанавливаем необходимые инструменты на сервер Proxmox
 apt update # Обновляем информацию о доступных пакетах
 apt install -y libguestfs-tools # Устанавливаем libguestfs-tools для работы с образами виртуальных машин
-
-
 
 export IMAGES_PATH="/root/template" 
 export IMAGE_NAME="noble-server-cloudimg-amd64.img" # имя образа, который будет загружен офф сайта
@@ -286,3 +284,60 @@ resource "proxmox_vm_qemu" "kube-agent" {
   EOF
 }
 ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

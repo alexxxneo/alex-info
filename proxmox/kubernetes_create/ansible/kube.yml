@@ -16,34 +16,34 @@
       - gnupg-agent  # Менеджер ключей для работы с GPG. Необходим для того, чтобы корректно импортировать и управлять GPG-ключами, что позволяет проверять подлинность пакетов, загружаемых из внешних репозиториев (Docker, Kubernetes). Используется модулем apt_key
       - software-properties-common  # Утилита для управления репозиториями. Нужна для модуля "apt_repository"
   
-  - name: Add an apt signing key for Docker  # Добавление ключа для подписи пакетов Docker
+  - name: Добавление ключа для подписи пакетов Docker
     apt_key:
       url: https://download.docker.com/linux/ubuntu/gpg  # URL ключа для Docker
       state: present  # Убедиться, что ключ добавлен
   
-  - name: Add apt repository for stable version  # Добавление репозитория Docker для стабильной версии
+  - name: Добавление репозитория Docker для последней стабильной версии
     apt_repository:
-      repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable  # Указание репозитория для Docker
+      repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable 
       state: present  # Убедиться, что репозиторий добавлен
   
-  - name: Install docker and its dependencies  # Установка Docker и его зависимостей
+  - name: Установка Docker и его зависимостей
     apt: 
-      name: "{{ packages }}"  # Список пакетов для установки
+      name: "{{ packages }}"  # Список пакетов для установки из переменной packages
       state: present  # Убедиться, что пакеты установлены
       update_cache: yes  # Обновить кэш apt перед установкой
     vars:
       packages:  # Определение переменной 'packages' со списком пакетов для Docker
-      - docker-ce  # Docker Community Edition
-      - docker-ce-cli  # Командная строка Docker
-      - containerd.io  # Среда выполнения контейнеров
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
   
-  - name: verify docker installed, enabled, and started  # Проверка, что Docker установлен, включен и запущен
+  - name: Проверка, что Docker установлен, запущен и включен автозапуск
     service:
       name: docker  # Управление сервисом Docker
       state: started  # Убедиться, что сервис запущен
       enabled: yes  # Убедиться, что сервис включен при загрузке
   
-  - name: Remove swapfile from /etc/fstab  # Удаление swap из файла fstab
+  - name: Удаление swap из файла fstab
     mount:
       name: "{{ item }}"  # Монтируемые файловые системы
       fstype: swap  # Тип файловой системы swap
@@ -56,31 +56,31 @@
     command: swapoff -a  # Отключить все swap-разделы
     when: ansible_swaptotal_mb >= 0  # Выполнять только, если swap присутствует (объем памяти swap больше 0)
     
-  - name: Add an apt signing key for Kubernetes  # Добавление ключа для подписи пакетов Kubernetes
+  - name: Добавление ключа для подписи пакетов Kubernetes
     apt_key:
       url: https://packages.cloud.google.com/apt/doc/apt-key.gpg  # URL ключа для Kubernetes
       state: present  # Убедиться, что ключ добавлен
 
-  - name: Adding apt repository for Kubernetes  # Добавление репозитория Kubernetes
+  - name: Добавление репозитория Kubernetes
     apt_repository:
       repo: deb https://apt.kubernetes.io/ kubernetes-xenial main  # Указание репозитория Kubernetes
       state: present  # Убедиться, что репозиторий добавлен
       filename: kubernetes.list  # Указание имени файла репозитория
 
-  - name: Install Kubernetes binaries  # Установка бинарных файлов Kubernetes
+  - name: Установка бинарных файлов Kubernetes
     apt: 
       name: "{{ packages }}"  # Список пакетов для установки
       state: present  # Убедиться, что пакеты установлены
       update_cache: yes  # Обновить кэш apt перед установкой
     vars:
       packages:  # Определение переменной 'packages' с конкретными версиями Kubernetes
-        - kubelet=1.23.6-00  # Установка версии kubelet
-        - kubeadm=1.23.6-00  # Установка версии kubeadm
-        - kubectl=1.23.6-00  # Установка версии kubectl
+        - kubelet
+        - kubeadm
+        - kubectl
         
-  - name: hold kubernetes binary versions (prevent from being updated)  # Закрепление версий Kubernetes (чтобы они не обновлялись)
+  - name: Закрепление версий Kubernetes чтобы не обновлялись
     dpkg_selections:
-      name: "{{ item }}"  # Имя пакета
+      name: "{{ item }}" 
       selection: hold  # Установить версию на удержание (не обновлять)
     loop:  # Перебор пакетов Kubernetes
       - kubelet
@@ -93,11 +93,11 @@
       daemon_reload: yes  # Перезагрузка демонов
       state: restarted  # Убедиться, что сервис перезапущен
       
-  - name: add ubuntu user to docker  # Добавление пользователя ubuntu в группу docker
+  - name: Добавление пользователя ubuntu в группу docker
     user:
-      name: ubuntu  # Имя пользователя
-      group: docker  # Добавить в группу docker
+      name: ubuntu
+      group: docker
   
-  - name: reboot to apply swap disable  # Перезагрузка для применения отключения swap
+  - name: Перезагрузка для применения отключения swap
     reboot:
       reboot_timeout: 180  # Задержка перед перезагрузкой на 3 минуты (180 секунд)

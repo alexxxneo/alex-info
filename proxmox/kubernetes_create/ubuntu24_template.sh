@@ -26,9 +26,9 @@ export CLOUD_INIT_USER="ubuntu" # Определяем имя пользоват
 export CLOUD_INIT_PASSWORD="123" # Задаем пароль для пользователя
 #export CLOUD_INIT_SSHKEY="/home/user/.ssh/id_rsa.pub" # Опционально: можно указать путь к публичному ключу SSH для пользователя
 #export CLOUD_INIT_IP="dhcp" # Опционально: можно использовать динамическую настройку IP через DHCP
-export CLOUD_INIT_IP="10.10.10.10/24,gw=10.10.10.1" # Задаем статический IP-адрес и шлюз для сети
+export CLOUD_INIT_IP="10.10.10.11/24,gw=10.10.10.1" # Задаем статический IP-адрес и шлюз для сети
 export CLOUD_INIT_NAMESERVER="8.8.8.8" # Указываем DNS-сервер
-export CLOUD_INIT_SEARCHDOMAIN="yandex.ru" # Указываем домен поиска
+export CLOUD_INIT_SEARCHDOMAIN="ya.ru" # Указываем домен поиска
 
 export TEMPLATE_ID=2001 # Устанавливаем идентификатор шаблона виртуальной машины
 #export TEMPLATE_ID=$(pvesh get /cluster/nextid) # Опционально: можно автоматически получить следующий доступный ID
