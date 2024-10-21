@@ -1,0 +1,25 @@
+---
+# tasks file for kubernetes_dashboard
+
+- name: create dashboard                # развертывание Kubernetes Dashboard в кластере.
+  command: kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml  
+                                        # Команда для установки Dashboard, скачивая манифест с GitHub и применяя его в кластер.
+
+- name: create user                    # Название задачи: создание пользователя с правами администратора для Dashboard.
+  become_user: ubuntu                  # Выполнять задачу от имени пользователя 'ubuntu'.
+  command: "{{ item }}"                # Выполняет команды, перечисленные в секции 'with_items'.
+  with_items:                          # Массив команд для выполнения:
+    - kubectl create serviceaccount admin-user -n kubernetes-dashboard  
+                                       # Создаёт сервисную учётную запись 'admin-user' в пространстве имён 'kubernetes-dashboard'.
+    - kubectl create clusterrolebinding dashboard-admin -n kubernetes-dashboard --clusterrole=cluster-admin --serviceaccount=kubernetes-dashboard:admin-user
+                                       # Присваивает учётной записи 'admin-user' роль 'cluster-admin' для управления кластером.
+
+- name: create token                   # Название задачи: создание токена для авторизации в Dashboard и его сохранение в переменную.
+  command: kubectl -n kubernetes-dashboard create token admin-user   # Команда для создания токена авторизации для пользователя 'admin-user'.
+  register: dashboard_token            # Регистрирует результат выполнения команды (токен) в переменную 'dashboard_token'.
+
+- name: Copy token to local file       # Название задачи: создание локального файла с токеном.
+  local_action: copy content="{{ dashboard_token.stdout_lines[0] }}" dest="./dashboard_token"        #  Содержимое файла — первая строка с токеном из переменной 'dashboard_token'. Путь для сохранения файла на локальной машине.
+
+- name: start dashboard                # Название задачи: запуск Kubernetes Dashboard через прокси-сервер.
+  shell: nohup kubectl proxy &         # Запуск команды 'kubectl proxy' в фоновом режиме для доступа к Dashboard через прокси.

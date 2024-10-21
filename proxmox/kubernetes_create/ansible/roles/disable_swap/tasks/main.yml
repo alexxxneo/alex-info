@@ -1,0 +1,18 @@
+---
+# tasks file for disable_swap
+  - name: Удаление swap из файла fstab
+    mount:
+      name: # Монтируемые файловые системы
+        - swap
+        - none
+      fstype: swap  # Тип файловой системы swap
+      state: absent  # Удалить запись из fstab
+ 
+  - name: Disable swap  # Отключение swap на системе
+    command: swapoff -a  # Отключить все swap-разделы
+    when: ansible_swaptotal_mb >= 0  # Выполнять только, если swap присутствует (объем памяти swap больше 0)
+    
+      
+  # - name: Перезагрузка для применения отключения swap
+  #   reboot:
+  #     reboot_timeout: 180  # Задержка перед перезагрузкой на 3 минуты (180 секунд)

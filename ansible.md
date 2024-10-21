@@ -1331,5 +1331,25 @@ linux3  ansible_host=172.18.0.3     owner=Alexxx
       var: result.stdout # вывели
 ```
 
+### Shell
+
+Варианты использования в плейбуках
+
+```yaml
+- name: get permission for "{{ ansible_user }}"  # Предоставляем доступ обычному пользователю к конфигурации кластера.
+  shell: "{{ item }}"
+  with_items:
+   - mkdir -p $HOME/.kjjjube                 #Создаем каталог .kube в домашнем каталоге пользователя, если он не существует.
+   - sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config # Копируем файл конфигурации администратора в каталог .kube пользователя.
+   - sudo chown $(id -u):$(id -g) $HOME/.kube/config #Изменяем владельца файла конфигурации на текущего пользователя.
+  
+
+- name: Network init - Install calico       # установка сетевого решения Calico для подов Kubernetes.
+  shell: "{{ item }}"
+  with_items:
+   - curl https://raw.githubusercontent.com/projectcalico/calico/v3.26.1/manifests/calico.yaml -O
+   - kubectl apply -f calico.yaml
+```
+
 ## Роли
 

@@ -1,47 +1,46 @@
 ---
-- name: Installing Docker dependencies # Установка необходимых зависимостей для Docker
+# tasks file for docker_install
+---
+- name: Installing docker dependencies  # Установка необходимых зависимостей для docker, apt по HTTPS и другие зависимости
   apt:
-    name:
-      - apt-transport-https # Позволяет apt работать через HTTPS
-      - ca-certificates # Установка сертификатов для HTTPS
-      - curl
-      - software-properties-common
-    state: present # Убеждаемся, что пакеты установлены, если нет то устанавливаем пакеты актуальных верси
-    update_cache: yes # команда apt update
+    name: 
+      - apt-transport-https             # Позволяет apt работать через HTTPS
+      - ca-certificates                 # Установка сертификатов для HTTPS
+      - curl                            # Утилита для передачи данных с использованием различных протоколов
+      - gnupg-agent                     # Менеджер ключей для работы с GPG. Необходим для того, чтобы корректно импортировать и управлять GPG-ключами, что позволяет проверять подлинность пакетов, загружаемых из внешних репозиториев (Docker, Kubernetes). Используется модулем apt_key
+      - software-properties-common      # Утилита для управления репозиториями. Нужна для модуля "apt_repository"
+    state: present                      # Убеждаемся, что пакеты установлены, если нет то устанавливаем пакеты актуальных верси
+    update_cache: yes                   # apt update перед установкой
 
-- name: Adding Docker GPG key # Добавление GPG ключа для официального apt-репозитория Docker
+  
+- name: Add docker gpg key              # Добавление GPG ключа для официального apt-репозитория Docker
   apt_key:
-    url: "{{ docker_gpg_key }}" # URL ключа для Docker
-    state: present # Убеждаемся, что ключ добавлен
+    url: "https://download.docker.com/linux/ubuntu/gpg" # URL ключа для Docker
+    state: present                      # Убеждаемся, что ключ добавлен
 
 - name: Add official docker apt repository # Добавление официального apt-репозитория docker
   apt_repository:
-    repo: "{{ docker_apt_repo }}" 
+    repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
     state: present 
 
-- name: Installing Docker # Установка Docker через пакетный менеджер apt
-  apt:
-    name: [docker-ce, docker-ce-cli, containerd.io]
-    state: latest
-    update_cache: yes
+- name: Install docker and dependensies # Установка Docker и его зависимостей
+  apt: 
+    name:                               # Список пакетов для установки из переменной packages
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+    state: present                      # Убедиться, что пакеты установлены
+    update_cache: yes                   # Обновить кэш apt перед установкой
 
-- name: Enabling and starting Docker service # Запуск сервиса Docker и занесение его в автозагрузку
+
+- name: Enable and start docker         # Запуск сервиса Docker и занесение его в автозагрузку
   service:
-    name: docker
-    state: started
-    enabled: yes
+    name: docker                        # Управление сервисом Docker
+    state: started                      # Убедиться, что сервис запущен
+    enabled: yes                        # Убедиться, что сервис включен при загрузке
 
-- name: Allowing '{{ ansible_user }}' user to access Docker socket # Добавление пользователя в группу Docker
+
+- name: Add user "{{ ansible_user }}" to docker group   # Добавление пользователя в группу Docker
   user:
-    name: "{{ ansible_user }}"
-    groups: docker
-    append: yes
-
-- name: Downloading Docker-Compose # Скачивание Docker-Compose, выдача прав на исполнение
-  get_url:
-    url: "{{ docker_compose_url }}"
-    dest: "{{ docker_compose_dest }}"
-    mode: '0755'
-
-- name: set net-bridge
-  command: sysctl net.bridge.bridge-nf-call-iptables=1
+    name: ansible_user
+    group: docker

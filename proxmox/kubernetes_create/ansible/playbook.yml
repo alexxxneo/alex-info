@@ -1,30 +1,32 @@
 
-- name: install docker and kubectl
-  hosts: [master, worker1] 
+- name: install docker and kubernetes on all 
+  hosts: kubernetes
   become: yes
   remote_user: ubuntu
   roles:
     - docker_install
-    - k8s_install
+    - kubernetes_install
+
 
 - name: create cluster
   hosts: master
   become: yes
   remote_user: ubuntu
   roles:
-    - k8s_create_cluster
+    - disable_swap
+    - kubernetes_create
 
 - name: node invite
-  hosts: worker1
+  hosts: workers
   become: yes
   remote_user: ubuntu
   roles:
-    - node_invite
+    - kubernetes_add_nodes
 
 - name: create dashboard
   hosts: master
   become: yes
   remote_user: ubuntu
   roles:
-    - k8s_dashboard
+    - kubernetes_dashboard
 

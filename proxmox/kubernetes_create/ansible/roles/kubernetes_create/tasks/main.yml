@@ -1,0 +1,26 @@
+---
+# tasks file for kubernetes_create
+
+
+- name: Init Kube cluster using kubeadm     # инициализация кластера Kubernetes с помощью kubeadm.
+  command: kubeadm init                     # Команда для инициализации кластера Kubernetes.
+
+
+- name: get permission for "{{ ansible_user }}"  # Предоставляем доступ обычному пользователю к конфигурации кластера.
+  shell: "{{ item }}"
+  with_items:
+   - mkdir -p $HOME/.kube                 #Создаем каталог .kube в домашнем каталоге пользователя, если он не существует. 
+   - sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config # Копируем файл конфигурации администратора в каталог .kube пользователя.
+   - sudo chown $(id -u):$(id -g) $HOME/.kube/config # Изменяем владельца файла конфигурации на текущего пользователя.
+
+- name: Network init - Install calico       # установка сетевого решения Calico для подов Kubernetes.
+  shell: |                                  
+    curl https://raw.githubusercontent.com/projectcalico/calico/v3.26.1/manifests/calico.yaml -O 
+    kubectl apply -f calico.yaml
+
+- name: Generate join command                         # генерация команды для присоединения ноды к кластеру.
+  command: kubeadm token create --print-join-command  # Выполняем команду для генерации команды присоединения ноды к кластеру.
+  register: join_command                              # записываем результат выполнения команды в переменной 'join_command'.
+
+- name: Copy join command to local file               # сохраняем команду присоединения ноды в локальный файл.
+  local_action: copy content="{{ join_command.stdout_lines[0] }}" dest="./join-command"  # Используем локальную команду для копирования содержимого переменной 'join_command' в файл 'join-command' на локальной машине. stdout_lines[0] означает что мы берем первую строку из стандартного вывода

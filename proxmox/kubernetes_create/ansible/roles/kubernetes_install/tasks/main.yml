@@ -1,0 +1,38 @@
+---
+# tasks file for kubernetes_install
+
+  - name: Add apt signing key           # Добавление ключа для подписи пакетов Kubernetes
+    apt_key:
+      url: https://packages.cloud.google.com/apt/doc/apt-key.gpg  # URL ключа для Kubernetes
+      state: present                    # Убедиться, что ключ добавлен
+
+  - name: Adding apt repository         # Добавление репозитория Kubernetes
+    apt_repository:
+      repo: deb https://apt.kubernetes.io/ kubernetes-xenial main  # Указание репозитория Kubernetes
+      state: present                    # Убедиться, что репозиторий добавлен
+      filename: kubernetes.list         # Указание имени файла репозитория
+
+  - name: Install Kubernetes binaries   # Установка бинарных файлов Kubernetes
+    apt: 
+      name:                             # Список пакетов для установки
+        - kubelet
+        - kubeadm
+        - kubectl
+      state: present                    # Убедиться, что пакеты установлены
+      update_cache: yes                 # Обновить кэш apt перед установкой
+        
+  - name: Hold versions of packages.    # Закрепление версий Kubernetes чтобы не обновлялись
+    dpkg_selections:
+      name: "{{ item }}" 
+      selection: hold                   # Установить версию на удержание (не обновлять)
+    loop:                               # Перебор пакетов Kubernetes
+      - kubelet
+      - kubeadm
+      - kubectl
+        
+  - name: Restart kubelet               # Перезапуск сервиса kubelet
+    service:
+      name: kubelet                     # Управление сервисом kubelet
+      daemon_reload: yes                # Перезагрузка демонов
+      state: restarted                  # убеждаемся, что сервис перезапущен
+      

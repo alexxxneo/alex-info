@@ -39,9 +39,9 @@
   
   - name: Проверка, что Docker установлен, запущен и включен автозапуск
     service:
-      name: docker  # Управление сервисом Docker
-      state: started  # Убедиться, что сервис запущен
-      enabled: yes  # Убедиться, что сервис включен при загрузке
+      name: docker  
+      state: started 
+      enabled: yes  
   
   - name: Удаление swap из файла fstab
     mount:
@@ -97,7 +97,79 @@
     user:
       name: ubuntu
       group: docker
+
+
+      
+
+
+
+
+- hosts: kube_server              # Определяет хосты из инвентаря, на которых будут выполняться задачи. В данном случае это 'kube_server'.
+  become: true                    # Выполнять задачи от имени суперпользователя (root).
+  remote_user: ubuntu              # Устанавливает удалённого пользователя для подключения по SSH.
+
+  vars_files:
+    - ansible-vars.yml             # Подключает внешний файл с переменными 'ansible-vars.yml'.
+
+  tasks:                           # Начало секции задач.
   
-  - name: Перезагрузка для применения отключения swap
-    reboot:
-      reboot_timeout: 180  # Задержка перед перезагрузкой на 3 минуты (180 секунд)
+  - name: set docker to use systemd cgroups driver # Название задачи: установка использования драйвера cgroups для Docker.
+    copy:                                             # Копирует конфигурационный файл на целевую машину.
+      dest: "/etc/docker/daemon.json"                 # Местоположение файла на удалённой машине.
+      content: |                                      # Содержимое файла, в котором указано, что Docker будет использовать драйвер cgroups от systemd.
+        {
+          "exec-opts": ["native.cgroupdriver=systemd"]
+        }
+
+  - name: restart docker              # Название задачи: перезапуск службы Docker.
+    service:                          # Используется модуль 'service' для управления службами.
+      name: docker                    # Имя службы: Docker.
+      state: restarted                # Задает перезапуск службы.
+
+  - name: Initialize Kubernetes cluster  # Название задачи: инициализация кластера Kubernetes с помощью kubeadm.
+    command: "kubeadm init --pod-network-cidr {{ pod_cidr }}"  # Выполняет команду инициализации с указанием сети подов.
+    args:                                                      
+      creates: /etc/kubernetes/admin.conf # Пропускает выполнение задачи, если файл '/etc/kubernetes/admin.conf' уже существует.
+    register: kube_init                    # Регистрирует результат выполнения команды в переменную 'kube_init'.
+
+  - name: show kube init info   # Название задачи: выводит информацию о результате инициализации кластера.
+    debug:                      # Использует модуль 'debug' для вывода информации.
+      var: kube_init             # Выводит содержимое переменной 'kube_init'.
+
+  - name: Create .kube directory in user home  # Создает директорию '.kube' в домашнем каталоге пользователя.
+    file:                                      # Модуль для управления файлами и директориями.
+      path: "{{ home_dir }}/.kube"             # Указывает путь к директории.
+      state: directory                         # Указывает, что необходимо создать директорию.
+      owner: 1000                              # Устанавливает владельца директории (идентификатор пользователя).
+      group: 1000                              # Устанавливает группу владельца директории (идентификатор группы).
+
+  - name: Configure .kube/config files in user home  # Копирует конфигурационный файл Kubernetes в домашнюю директорию пользователя.
+    copy:                                            # Использует модуль 'copy' для копирования файла.
+      src: /etc/kubernetes/admin.conf                # Исходный файл (на удалённой машине).
+      dest: "{{ home_dir }}/.kube/config"            # Местоположение назначения.
+      remote_src: yes                                # Указывает, что файл находится на удаленной машине.
+      owner: 1000                                    # Устанавливает владельца файла.
+      group: 1000                                    # Устанавливает группу владельца файла.
+
+  - name: restart kubelet for config changes    # Название задачи: перезапуск службы kubelet для применения изменений конфигурации.
+    service:                                    # Модуль для управления службами.
+      name: kubelet                             # Имя службы: kubelet.
+      state: restarted                          # Перезапускает службу.
+
+  - name: get calico networking           # Задача: скачать манифест для сетевого решения Calico.
+    get_url:                              # Модуль для скачивания файлов по URL.
+      url: https://projectcalico.docs.tigera.io/manifests/calico.yaml  # URL для скачивания манифеста.
+      dest: "{{ home_dir }}/calico.yaml"                                # Путь, куда будет сохранён файл.
+
+  - name: apply calico networking     # Применяет сетевое решение Calico для кластера.
+    become: no                        # Выполняет команду без повышения привилегий.
+    command: kubectl apply -f "{{ home_dir }}/calico.yaml"  # Применяет манифест Calico с помощью команды kubectl.
+
+  - name: get dashboard                # Скачивает манифест для Kubernetes Dashboard.
+    get_url:                           # Модуль для скачивания файлов по URL.
+      url: https://raw.githubusercontent.com/kubernetes/dashboard/v2.5.0/aio/deploy/recommended.yaml  # URL для манифеста Dashboard.
+      dest: "{{ home_dir }}/dashboard.yaml"                                                         # Путь для сохранения файла.
+
+  - name: apply dashboard           # Применяет манифест Dashboard в кластер.
+    become: no                      # Выполняет команду без повышения привилегий.
+    command: kubectl apply -f "{{ home_dir }}/dashboard.yaml"  # Применяет манифест Dashboard с помощью команды kubectl.
